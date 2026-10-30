@@ -57,3 +57,35 @@ def top_k_accuracy(candidates: Sequence[Sequence[str]], references: Sequence[str
 def _check_lengths(a: Sequence, b: Sequence) -> None:
     if len(a) != len(b):
         raise ValueError(f"length mismatch: {len(a)} predictions vs {len(b)} references")
+
+
+def classification_report(
+    gold: Sequence[str], predicted: Sequence[str], labels: Sequence[str]
+) -> dict[str, dict[str, float]]:
+    """Per-label precision, recall, F1 and support (gold count)."""
+    _check_lengths(gold, predicted)
+    report = {}
+    for label in labels:
+        tp = sum(g == label and p == label for g, p in zip(gold, predicted, strict=True))
+        predicted_n = sum(p == label for p in predicted)
+        support = sum(g == label for g in gold)
+        precision = tp / predicted_n if predicted_n else 0.0
+        recall = tp / support if support else 0.0
+        f1 = 2 * precision * recall / (precision + recall) if precision + recall else 0.0
+        report[label] = {"precision": precision, "recall": recall, "f1": f1, "support": support}
+    return report
+
+
+def macro_f1(report: dict[str, dict[str, float]], labels: Sequence[str]) -> float:
+    return sum(report[label]["f1"] for label in labels) / len(labels)
+
+
+def confusion_matrix(
+    gold: Sequence[str], predicted: Sequence[str], labels: Sequence[str]
+) -> dict[str, dict[str, int]]:
+    """matrix[gold_label][predicted_label] = count."""
+    _check_lengths(gold, predicted)
+    matrix = {g: dict.fromkeys(labels, 0) for g in labels}
+    for g, p in zip(gold, predicted, strict=True):
+        matrix[g][p] += 1
+    return matrix

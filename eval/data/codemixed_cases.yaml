@@ -1,0 +1,410 @@
+# Hand-built code-mixed test set — docs/EVALUATION.md §1.2. TEST SET: never tune on it.
+#
+# expected_tokens is compact: space-separated `surface/code`, one per token as
+# `likho.tokenize.split` produces them. Codes: h=hindi e=english ne=named_entity
+# n=numeric p=punct d=devanagari. `eval.cases.load_cases` expands it to the
+# {surface, kind} list of the spec.
+#
+# Labelling conventions:
+# - English words stay `e` even when common in Hindi (bank, train, office): U5
+#   keeps them Roman by default; U8 is the opt-in for Devanagari.
+# - People, places, brands, festivals: `ne`.
+# - Chat spellings of Hindi words (kr, nhi): `h`.
+# - expected_native: hindi tokens in Devanagari, everything else unchanged.
+#   Spelling follows common modern usage (हूं, आएगा, खत्म); nukta kept where
+#   standard (ज़रूरत, रोज़). Variant spellings are F-taxonomy material, not errors
+#   to argue about here.
+#
+# Annotation status: DRAFT. Labels written by one annotator (AI-assisted draft,
+# 2026-10-30). The spec requires two team members to label independently and
+# record disagreements below before results are reported.
+annotation:
+  annotator_a: "AI-assisted draft"
+  annotator_b: null
+  disagreements: null
+
+cases:
+  # ---- plain: pure Hindi, no code-mixing (10)
+  - id: cm_001
+    input: "aaj mausam bahut accha hai"
+    expected_tokens: "aaj/h mausam/h bahut/h accha/h hai/h"
+    expected_native: "आज मौसम बहुत अच्छा है"
+    expected_english: "The weather is very nice today"
+    difficulty: easy
+    tags: [plain]
+  - id: cm_002
+    input: "tum kab ghar aaoge"
+    expected_tokens: "tum/h kab/h ghar/h aaoge/h"
+    expected_native: "तुम कब घर आओगे"
+    expected_english: "When will you come home?"
+    difficulty: easy
+    tags: [plain]
+  - id: cm_003
+    input: "mujhe thoda paani chahiye"
+    expected_tokens: "mujhe/h thoda/h paani/h chahiye/h"
+    expected_native: "मुझे थोड़ा पानी चाहिए"
+    expected_english: "I need some water"
+    difficulty: easy
+    tags: [plain]
+  - id: cm_004
+    input: "hum log shaam ko milenge"
+    expected_tokens: "hum/h log/h shaam/h ko/h milenge/h"
+    expected_native: "हम लोग शाम को मिलेंगे"
+    expected_english: "We will meet in the evening"
+    difficulty: medium
+    tags: [plain]
+  - id: cm_005
+    input: "kya aapne khana kha liya?"
+    expected_tokens: "kya/h aapne/h khana/h kha/h liya/h ?/p"
+    expected_native: "क्या आपने खाना खा लिया?"
+    expected_english: "Have you eaten?"
+    difficulty: easy
+    tags: [plain]
+  - id: cm_006
+    input: "maine kitaab mez par rakh di hai"
+    expected_tokens: "maine/h kitaab/h mez/h par/h rakh/h di/h hai/h"
+    expected_native: "मैंने किताब मेज़ पर रख दी है"
+    expected_english: "I have put the book on the table"
+    difficulty: medium
+    tags: [plain]
+  - id: cm_007
+    input: "yeh kaam kal tak khatam karna hai"
+    expected_tokens: "yeh/h kaam/h kal/h tak/h khatam/h karna/h hai/h"
+    expected_native: "यह काम कल तक खत्म करना है"
+    expected_english: "This work has to be finished by tomorrow"
+    difficulty: easy
+    tags: [plain]
+  - id: cm_008
+    input: "unhone mujhe sach bata diya"
+    expected_tokens: "unhone/h mujhe/h sach/h bata/h diya/h"
+    expected_native: "उन्होंने मुझे सच बता दिया"
+    expected_english: "They told me the truth"
+    difficulty: easy
+    tags: [plain]
+  - id: cm_009
+    input: "bachche bahar khel rahe hain"
+    expected_tokens: "bachche/h bahar/h khel/h rahe/h hain/h"
+    expected_native: "बच्चे बाहर खेल रहे हैं"
+    expected_english: "The children are playing outside"
+    difficulty: easy
+    tags: [plain]
+  - id: cm_010
+    input: "meri maa ne aaj kheer banayi"
+    expected_tokens: "meri/h maa/h ne/h aaj/h kheer/h banayi/h"
+    expected_native: "मेरी माँ ने आज खीर बनाई"
+    expected_english: "My mother made kheer today"
+    difficulty: medium
+    tags: [plain]
+
+  # ---- loanword: English nouns inside Hindi syntax (10)
+  - id: cm_011
+    input: "mujhe kal office jana hai"
+    expected_tokens: "mujhe/h kal/h office/e jana/h hai/h"
+    expected_native: "मुझे कल office जाना है"
+    expected_english: "I have to go to the office tomorrow"
+    difficulty: easy
+    tags: [loanword]
+  - id: cm_012
+    input: "kal ke meeting ke liye Rohit ko bata dena"
+    expected_tokens: "kal/h ke/h meeting/e ke/h liye/h Rohit/ne ko/h bata/h dena/h"
+    expected_native: "कल के meeting के लिए Rohit को बता देना"
+    expected_english: "Tell Rohit about tomorrow's meeting"
+    difficulty: medium
+    tags: [loanword, named_entity]
+  - id: cm_013
+    input: "mera phone charge nahi ho raha"
+    expected_tokens: "mera/h phone/e charge/e nahi/h ho/h raha/h"
+    expected_native: "मेरा phone charge नहीं हो रहा"
+    expected_english: "My phone is not charging"
+    difficulty: easy
+    tags: [loanword]
+  - id: cm_014
+    input: "train do ghante late hai"
+    expected_tokens: "train/e do/h ghante/h late/e hai/h"
+    expected_native: "train दो घंटे late है"
+    expected_english: "The train is two hours late"
+    difficulty: medium
+    tags: [loanword, ambiguous]
+  - id: cm_015
+    input: "aaj ka lecture cancel ho gaya"
+    expected_tokens: "aaj/h ka/h lecture/e cancel/e ho/h gaya/h"
+    expected_native: "आज का lecture cancel हो गया"
+    expected_english: "Today's lecture got cancelled"
+    difficulty: easy
+    tags: [loanword]
+  - id: cm_016
+    input: "laptop ki battery jaldi khatam ho jaati hai"
+    expected_tokens: "laptop/e ki/h battery/e jaldi/h khatam/h ho/h jaati/h hai/h"
+    expected_native: "laptop की battery जल्दी खत्म हो जाती है"
+    expected_english: "The laptop battery runs out quickly"
+    difficulty: easy
+    tags: [loanword]
+  - id: cm_017
+    input: "mujhe kal bank jana hai"
+    expected_tokens: "mujhe/h kal/h bank/e jana/h hai/h"
+    expected_native: "मुझे कल bank जाना है"
+    expected_english: "I have to go to the bank tomorrow"
+    difficulty: medium
+    tags: [loanword, ambiguous]
+  - id: cm_018
+    input: "uska scooter kharab ho gaya"
+    expected_tokens: "uska/h scooter/e kharab/h ho/h gaya/h"
+    expected_native: "उसका scooter खराब हो गया"
+    expected_english: "Their scooter broke down"
+    difficulty: easy
+    tags: [loanword]
+  - id: cm_019
+    input: "exam ka result kab aayega?"
+    expected_tokens: "exam/e ka/h result/e kab/h aayega/h ?/p"
+    expected_native: "exam का result कब आएगा?"
+    expected_english: "When will the exam result come out?"
+    difficulty: easy
+    tags: [loanword]
+  - id: cm_020
+    input: "hostel ka khana bilkul accha nahi hai"
+    expected_tokens: "hostel/e ka/h khana/h bilkul/h accha/h nahi/h hai/h"
+    expected_native: "hostel का खाना बिल्कुल अच्छा नहीं है"
+    expected_english: "The hostel food is not good at all"
+    difficulty: easy
+    tags: [loanword]
+
+  # ---- named_entity: people, places, brands (8)
+  - id: cm_021
+    input: "Priya aur main kal Delhi ja rahe hain"
+    expected_tokens: "Priya/ne aur/h main/h kal/h Delhi/ne ja/h rahe/h hain/h"
+    expected_native: "Priya और मैं कल Delhi जा रहे हैं"
+    expected_english: "Priya and I are going to Delhi tomorrow"
+    difficulty: hard
+    tags: [named_entity, ambiguous]
+  - id: cm_022
+    input: "kal Rahul ka birthday hai"
+    expected_tokens: "kal/h Rahul/ne ka/h birthday/e hai/h"
+    expected_native: "कल Rahul का birthday है"
+    expected_english: "It's Rahul's birthday tomorrow"
+    difficulty: easy
+    tags: [named_entity, loanword]
+  - id: cm_023
+    input: "humne Amazon se naya phone mangwaya"
+    expected_tokens: "humne/h Amazon/ne se/h naya/h phone/e mangwaya/h"
+    expected_native: "हमने Amazon से नया phone मंगवाया"
+    expected_english: "We ordered a new phone from Amazon"
+    difficulty: easy
+    tags: [named_entity, loanword]
+  - id: cm_024
+    input: "Bengaluru mein aaj baarish ho rahi hai"
+    expected_tokens: "Bengaluru/ne mein/h aaj/h baarish/h ho/h rahi/h hai/h"
+    expected_native: "Bengaluru में आज बारिश हो रही है"
+    expected_english: "It is raining in Bengaluru today"
+    difficulty: hard
+    tags: [named_entity]
+  - id: cm_025
+    input: "mujhe Anand ka number chahiye"
+    expected_tokens: "mujhe/h Anand/ne ka/h number/e chahiye/h"
+    expected_native: "मुझे Anand का number चाहिए"
+    expected_english: "I need Anand's number"
+    difficulty: medium
+    tags: [named_entity, loanword]
+  - id: cm_026
+    input: "Asha didi kal aa rahi hain"
+    expected_tokens: "Asha/ne didi/h kal/h aa/h rahi/h hain/h"
+    expected_native: "Asha दीदी कल आ रही हैं"
+    expected_english: "Asha didi is coming tomorrow"
+    difficulty: hard
+    tags: [named_entity]
+  - id: cm_027
+    input: "kya tumne Sharma sir ko email kiya?"
+    expected_tokens: "kya/h tumne/h Sharma/ne sir/e ko/h email/e kiya/h ?/p"
+    expected_native: "क्या तुमने Sharma sir को email किया?"
+    expected_english: "Did you email Sharma sir?"
+    difficulty: medium
+    tags: [named_entity, loanword]
+  - id: cm_028
+    input: "hum Diwali par Jaipur jayenge"
+    expected_tokens: "hum/h Diwali/ne par/h Jaipur/ne jayenge/h"
+    expected_native: "हम Diwali पर Jaipur जाएंगे"
+    expected_english: "We will go to Jaipur for Diwali"
+    difficulty: medium
+    tags: [named_entity, ambiguous]
+
+  # ---- ambiguous: to/तो, me/में, is/इस, bank, hum, jai (8)
+  - id: cm_029
+    input: "mujhe to pata hi nahi tha"
+    expected_tokens: "mujhe/h to/h pata/h hi/h nahi/h tha/h"
+    expected_native: "मुझे तो पता ही नहीं था"
+    expected_english: "I didn't even know"
+    difficulty: medium
+    tags: [ambiguous]
+  - id: cm_030
+    input: "is baar main bhi aaunga"
+    expected_tokens: "is/h baar/h main/h bhi/h aaunga/h"
+    expected_native: "इस बार मैं भी आऊंगा"
+    expected_english: "I will come too this time"
+    difficulty: hard
+    tags: [ambiguous]
+  - id: cm_031
+    input: "ghar me koi nahi hai"
+    expected_tokens: "ghar/h me/h koi/h nahi/h hai/h"
+    expected_native: "घर में कोई नहीं है"
+    expected_english: "There is no one at home"
+    difficulty: medium
+    tags: [ambiguous]
+  - id: cm_032
+    input: "hum to kal hi nikal gaye the"
+    expected_tokens: "hum/h to/h kal/h hi/h nikal/h gaye/h the/h"
+    expected_native: "हम तो कल ही निकल गए थे"
+    expected_english: "We had already left yesterday"
+    difficulty: hard
+    tags: [ambiguous]
+  - id: cm_033
+    input: "is kitaab me bahut kahaniyan hain"
+    expected_tokens: "is/h kitaab/h me/h bahut/h kahaniyan/h hain/h"
+    expected_native: "इस किताब में बहुत कहानियां हैं"
+    expected_english: "This book has many stories"
+    difficulty: medium
+    tags: [ambiguous]
+  - id: cm_034
+    input: "please call me when you reach"
+    expected_tokens: "please/e call/e me/e when/e you/e reach/e"
+    expected_native: "please call me when you reach"
+    expected_english: "please call me when you reach"
+    difficulty: medium
+    tags: [ambiguous]
+  - id: cm_035
+    input: "main bank ke paas khada hoon"
+    expected_tokens: "main/h bank/e ke/h paas/h khada/h hoon/h"
+    expected_native: "मैं bank के पास खड़ा हूं"
+    expected_english: "I am standing near the bank"
+    difficulty: medium
+    tags: [ambiguous, loanword]
+  - id: cm_036
+    input: "jai ho, team jeet gayi!"
+    expected_tokens: "jai/h ho/h ,/p team/e jeet/h gayi/h !/p"
+    expected_native: "जय हो, team जीत गई!"
+    expected_english: "Hurray, the team won!"
+    difficulty: medium
+    tags: [ambiguous]
+
+  # ---- hinglish_verb: English stem + Hindi light verb (6)
+  - id: cm_037
+    input: "report ko manage karna padega"
+    expected_tokens: "report/e ko/h manage/e karna/h padega/h"
+    expected_native: "report को manage करना पड़ेगा"
+    expected_english: "The report will have to be managed"
+    difficulty: easy
+    tags: [hinglish_verb]
+  - id: cm_038
+    input: "file update kar dena"
+    expected_tokens: "file/e update/e kar/h dena/h"
+    expected_native: "file update कर देना"
+    expected_english: "Please update the file"
+    difficulty: easy
+    tags: [hinglish_verb]
+  - id: cm_039
+    input: "yeh mail sabko forward kar do"
+    expected_tokens: "yeh/h mail/e sabko/h forward/e kar/h do/h"
+    expected_native: "यह mail सबको forward कर दो"
+    expected_english: "Forward this mail to everyone"
+    difficulty: medium
+    tags: [hinglish_verb, ambiguous]
+  - id: cm_040
+    input: "maine form submit kar diya hai"
+    expected_tokens: "maine/h form/e submit/e kar/h diya/h hai/h"
+    expected_native: "मैंने form submit कर दिया है"
+    expected_english: "I have submitted the form"
+    difficulty: easy
+    tags: [hinglish_verb]
+  - id: cm_041
+    input: "kal tak sab adjust ho jayega"
+    expected_tokens: "kal/h tak/h sab/h adjust/e ho/h jayega/h"
+    expected_native: "कल तक सब adjust हो जाएगा"
+    expected_english: "Everything will be sorted out by tomorrow"
+    difficulty: easy
+    tags: [hinglish_verb]
+  - id: cm_042
+    input: "usne mera message ignore kar diya"
+    expected_tokens: "usne/h mera/h message/e ignore/e kar/h diya/h"
+    expected_native: "उसने मेरा message ignore कर दिया"
+    expected_english: "They ignored my message"
+    difficulty: easy
+    tags: [hinglish_verb]
+
+  # ---- long: 40+ words (4)
+  - id: cm_043
+    input: "kal subah main jaldi uthkar college gaya kyunki pehla lecture aath baje tha, lekin wahan pahunch kar pata chala ki professor ne class cancel kar di hai, toh main library chala gaya aur do ghante tak apne project par kaam kiya, phir dopahar ko doston ke saath canteen mein khana khaya aur shaam ko ghar wapas aa gaya"
+    expected_tokens: >-
+      kal/h subah/h main/h jaldi/h uthkar/h college/e gaya/h kyunki/h pehla/h lecture/e
+      aath/h baje/h tha/h ,/p lekin/h wahan/h pahunch/h kar/h pata/h chala/h ki/h
+      professor/e ne/h class/e cancel/e kar/h di/h hai/h ,/p toh/h main/h library/e
+      chala/h gaya/h aur/h do/h ghante/h tak/h apne/h project/e par/h kaam/h kiya/h ,/p
+      phir/h dopahar/h ko/h doston/h ke/h saath/h canteen/e mein/h khana/h khaya/h
+      aur/h shaam/h ko/h ghar/h wapas/h aa/h gaya/h
+    expected_native: "कल सुबह मैं जल्दी उठकर college गया क्योंकि पहला lecture आठ बजे था, लेकिन वहां पहुंच कर पता चला कि professor ने class cancel कर दी है, तो मैं library चला गया और दो घंटे तक अपने project पर काम किया, फिर दोपहर को दोस्तों के साथ canteen में खाना खाया और शाम को घर वापस आ गया"
+    expected_english: "Yesterday morning I got up early and went to college because the first lecture was at eight, but when I got there I found out that the professor had cancelled the class, so I went to the library and worked on my project for two hours, then had lunch with friends in the canteen in the afternoon and came back home in the evening"
+    difficulty: hard
+    tags: [long, loanword]
+  - id: cm_044
+    input: "dekho yaar, is weekend pe hum sab Goa jaane ka plan bana rahe hain, toh tum bhi apni leave approve karwa lo aur tickets jaldi book kar lena kyunki baad mein flight bahut mehengi ho jaati hai aur hotel bhi nahi milta, baaki details main tumhe raat ko WhatsApp par bhej dunga"
+    expected_tokens: >-
+      dekho/h yaar/h ,/p is/h weekend/e pe/h hum/h sab/h Goa/ne jaane/h ka/h plan/e
+      bana/h rahe/h hain/h ,/p toh/h tum/h bhi/h apni/h leave/e approve/e karwa/h lo/h
+      aur/h tickets/e jaldi/h book/e kar/h lena/h kyunki/h baad/h mein/h flight/e
+      bahut/h mehengi/h ho/h jaati/h hai/h aur/h hotel/e bhi/h nahi/h milta/h ,/p
+      baaki/h details/e main/h tumhe/h raat/h ko/h WhatsApp/ne par/h bhej/h dunga/h
+    expected_native: "देखो यार, इस weekend पे हम सब Goa जाने का plan बना रहे हैं, तो तुम भी अपनी leave approve करवा लो और tickets जल्दी book कर लेना क्योंकि बाद में flight बहुत महंगी हो जाती है और hotel भी नहीं मिलता, बाकी details मैं तुम्हें रात को WhatsApp पर भेज दूंगा"
+    expected_english: "Look, we're all planning a trip to Goa this weekend, so get your leave approved too and book the tickets soon, because flights get very expensive later and hotels aren't available either; I'll send you the rest of the details on WhatsApp tonight"
+    difficulty: hard
+    tags: [long, ambiguous, named_entity]
+  - id: cm_045
+    input: "mere dadaji har roz subah paanch baje uthte hain, phir paas ke park mein ek ghante tak tehelte hain, wapas aakar adrak wali chai peete hain aur akhbaar padhte hain, unka kehna hai ki agar insaan apni dincharya theek rakhe toh use kabhi doctor ke paas jaane ki zaroorat nahi padti"
+    expected_tokens: >-
+      mere/h dadaji/h har/h roz/h subah/h paanch/h baje/h uthte/h hain/h ,/p phir/h
+      paas/h ke/h park/e mein/h ek/h ghante/h tak/h tehelte/h hain/h ,/p wapas/h
+      aakar/h adrak/h wali/h chai/h peete/h hain/h aur/h akhbaar/h padhte/h hain/h ,/p
+      unka/h kehna/h hai/h ki/h agar/h insaan/h apni/h dincharya/h theek/h rakhe/h
+      toh/h use/h kabhi/h doctor/e ke/h paas/h jaane/h ki/h zaroorat/h nahi/h padti/h
+    expected_native: "मेरे दादाजी हर रोज़ सुबह पांच बजे उठते हैं, फिर पास के park में एक घंटे तक टहलते हैं, वापस आकर अदरक वाली चाय पीते हैं और अखबार पढ़ते हैं, उनका कहना है कि अगर इंसान अपनी दिनचर्या ठीक रखे तो उसे कभी doctor के पास जाने की ज़रूरत नहीं पड़ती"
+    expected_english: "My grandfather gets up at five every morning, then walks in the nearby park for an hour, comes back, drinks ginger tea and reads the newspaper; he says that if a person keeps a proper daily routine, they never need to go to the doctor"
+    difficulty: hard
+    tags: [long, ambiguous]
+  - id: cm_046
+    input: "sir, main aapko batana chahta hoon ki kal raat mere ghar ke paas bijli chali gayi thi aur internet bhi kaam nahi kar raha tha, isliye main assignment time par submit nahi kar paaya, kya aap mujhe do din ka extension de sakte hain, main vaada karta hoon ki aage se aisa nahi hoga"
+    expected_tokens: >-
+      sir/e ,/p main/h aapko/h batana/h chahta/h hoon/h ki/h kal/h raat/h mere/h ghar/h
+      ke/h paas/h bijli/h chali/h gayi/h thi/h aur/h internet/e bhi/h kaam/h nahi/h
+      kar/h raha/h tha/h ,/p isliye/h main/h assignment/e time/e par/h submit/e nahi/h
+      kar/h paaya/h ,/p kya/h aap/h mujhe/h do/h din/h ka/h extension/e de/h sakte/h
+      hain/h ,/p main/h vaada/h karta/h hoon/h ki/h aage/h se/h aisa/h nahi/h hoga/h
+    expected_native: "sir, मैं आपको बताना चाहता हूं कि कल रात मेरे घर के पास बिजली चली गई थी और internet भी काम नहीं कर रहा था, इसलिए मैं assignment time पर submit नहीं कर पाया, क्या आप मुझे दो दिन का extension दे सकते हैं, मैं वादा करता हूं कि आगे से ऐसा नहीं होगा"
+    expected_english: "Sir, I want to tell you that last night the power went out near my house and the internet was not working either, so I could not submit the assignment on time; could you give me a two-day extension? I promise it won't happen again"
+    difficulty: hard
+    tags: [long, loanword]
+
+  # ---- already_devanagari: router must skip transliteration (4)
+  - id: cm_047
+    input: "मुझे कल जाना है"
+    expected_tokens: "मुझे/d कल/d जाना/d है/d"
+    expected_native: "मुझे कल जाना है"
+    expected_english: "I have to go tomorrow"
+    difficulty: easy
+    tags: [already_devanagari]
+  - id: cm_048
+    input: "आज बहुत गर्मी है।"
+    expected_tokens: "आज/d बहुत/d गर्मी/d है/d ।/p"
+    expected_native: "आज बहुत गर्मी है।"
+    expected_english: "It is very hot today."
+    difficulty: easy
+    tags: [already_devanagari]
+  - id: cm_049
+    input: "क्या आप मेरी मदद कर सकते हैं?"
+    expected_tokens: "क्या/d आप/d मेरी/d मदद/d कर/d सकते/d हैं/d ?/p"
+    expected_native: "क्या आप मेरी मदद कर सकते हैं?"
+    expected_english: "Can you help me?"
+    difficulty: easy
+    tags: [already_devanagari]
+  - id: cm_050
+    input: "मेरा नाम Rohit है"
+    expected_tokens: "मेरा/d नाम/d Rohit/ne है/d"
+    expected_native: "मेरा नाम Rohit है"
+    expected_english: "My name is Rohit"
+    difficulty: medium
+    tags: [already_devanagari, named_entity]

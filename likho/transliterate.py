@@ -4,6 +4,8 @@ IndicXlit has no sentence context; this stage only produces candidates and a
 provisional choice (candidate 0). Context-aware choice is `likho.rerank` (M3).
 """
 
+from functools import lru_cache
+
 from likho.config import settings
 from likho.logging import get_logger
 from likho.registry import XlitEngineLike, get_xlit_engine
@@ -42,7 +44,7 @@ def transliterate_tokens(
             continue
         key = token.surface.lower()
         if key not in cache:
-            cache[key] = _candidates(engine, key, top_k)
+            cache[key] = list(xlit_candidates(engine, key, top_k))
         candidates = cache[key]
         if candidates:
             update = {"candidates": candidates, "chosen": candidates[0], "chosen_rank": 0}
@@ -53,8 +55,11 @@ def transliterate_tokens(
     return out
 
 
-def _candidates(engine: XlitEngineLike, word: str, top_k: int) -> list[str]:
+@lru_cache(maxsize=20_000)
+def xlit_candidates(engine: XlitEngineLike, word: str, top_k: int) -> tuple[str, ...]:
+    """Ranked, de-duplicated candidates for a lowercase word. Cached per process,
+    because the tagger and this stage both need them for the same words."""
     result = engine.translit_word(word, topk=top_k)
     # The pip package returns {lang: [...]}; tolerate a bare list across versions.
     ranked = result.get(settings.language, []) if isinstance(result, dict) else result
-    return list(dict.fromkeys(c for c in ranked if c))[:top_k]
+    return tuple(dict.fromkeys(c for c in ranked if c))[:top_k]

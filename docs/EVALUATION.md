@@ -80,6 +80,17 @@ Have two team members label each case independently and reconcile
 disagreements. Report the disagreement count — an honest inter-annotator
 number is worth more marks than a suspiciously clean set.
 
+**As built.** `expected_tokens` is written compactly for reviewability —
+`"kal/h meeting/e Rohit/ne ,/p"` (codes: h e ne n p d) — and expanded to the
+`{surface, kind}` list above by `eval/cases.py`. `eval/cases_test.py` checks
+every case: token surfaces match `likho.tokenize.split`, and
+`expected_native` differs from the input only at HINDI tokens. Each case
+counts toward the distribution table by its first tag.
+
+`eval/data/dev_cases.yaml` holds 20 further sentences in the same format for
+tuning (tagger thresholds, reranker α/β/γ). It shares no sentence with the
+test set.
+
 ### 1.3 `router_cases.yaml` — 30 labelled intents
 
 Inputs paired with the stage list the router should pick. Include English-only

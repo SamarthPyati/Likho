@@ -11,3 +11,4 @@ gradio
 pytest
 ruff
 black
+wordfreq

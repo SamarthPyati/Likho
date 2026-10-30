@@ -1,6 +1,15 @@
 import pytest
 
-from eval.metrics import cer, corpus_cer, levenshtein, normalize, top_k_accuracy
+from eval.metrics import (
+    cer,
+    classification_report,
+    confusion_matrix,
+    corpus_cer,
+    levenshtein,
+    macro_f1,
+    normalize,
+    top_k_accuracy,
+)
 
 
 def test_levenshtein_worked_examples():
@@ -42,3 +51,23 @@ def test_top_k_accuracy_worked_example():
 def test_length_mismatch_raises():
     with pytest.raises(ValueError):
         top_k_accuracy([["a"]], ["a", "b"], k=1)
+
+
+def test_classification_report_worked_example():
+    gold = ["h", "h", "h", "e", "e", "ne"]
+    pred = ["h", "h", "e", "e", "h", "h"]
+    report = classification_report(gold, pred, ["h", "e", "ne"])
+    # h: tp=2, predicted 4, support 3 → P=0.5, R=2/3, F1=4/7
+    assert report["h"]["precision"] == pytest.approx(0.5)
+    assert report["h"]["recall"] == pytest.approx(2 / 3)
+    assert report["h"]["f1"] == pytest.approx(4 / 7)
+    # e: tp=1, predicted 2, support 2 → P=R=F1=0.5
+    assert report["e"]["f1"] == pytest.approx(0.5)
+    # ne: never predicted → 0
+    assert report["ne"] == {"precision": 0.0, "recall": 0.0, "f1": 0.0, "support": 1}
+    assert macro_f1(report, ["h", "e", "ne"]) == pytest.approx((4 / 7 + 0.5) / 3)
+
+
+def test_confusion_matrix_worked_example():
+    matrix = confusion_matrix(["h", "e", "e"], ["h", "h", "e"], ["h", "e"])
+    assert matrix == {"h": {"h": 1, "e": 0}, "e": {"h": 1, "e": 1}}

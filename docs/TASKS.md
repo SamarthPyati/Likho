@@ -46,13 +46,16 @@ tests with hand-computed expected values.
 
 The hard one. Budget the most time here.
 
-- [ ] `likho/tokenize.py` — splitter preserving punctuation and spacing
-- [ ] English wordlist + Hindi romanization lexicon, committed as data files
-- [ ] Orthographic heuristics (capitalisation, n-grams)
-- [ ] LLM tiebreak — **one batched call per sentence**, never per token
-- [ ] `kind_confidence` set from the deciding signal
-- [ ] `eval/data/codemixed_cases.yaml` — 50 cases per `docs/EVALUATION.md` §1.2,
-      double-labelled, disagreements recorded
+- [x] `likho/tokenize.py` — splitter preserving punctuation and spacing
+- [x] English wordlist + Hindi romanization lexicon, committed as data files
+      (wordfreq-derived frequency lists; see `docs/ARCHITECTURE.md` §4 "As built")
+- [x] Orthographic heuristics (capitalisation, n-grams)
+- [x] LLM tiebreak — **one batched call per sentence**, never per token
+      (falls back to rules until the Param-1 loader lands in M4)
+- [x] `kind_confidence` set from the deciding signal
+- [x] `eval/data/codemixed_cases.yaml` — 50 cases per `docs/EVALUATION.md` §1.2
+- [ ] …double-labelled by two team members, disagreements recorded in the
+      file header (currently a single AI-assisted draft)
 
 **Accept when:** per-kind P/R/F1 and a confusion matrix print from the eval
 harness. Token classification F1 ≥ 0.85 on the committed set, or a written

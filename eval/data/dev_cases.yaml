@@ -1,0 +1,151 @@
+# Dev split — 20 sentences for tuning tagger thresholds (M2) and reranker
+# weights α, β, γ (M3). Same format as codemixed_cases.yaml. Tune here, never
+# on the test set; no sentence here appears there.
+#
+# Annotation status: DRAFT, single annotator (AI-assisted, 2026-10-30).
+annotation:
+  annotator_a: "AI-assisted draft"
+  annotator_b: null
+  disagreements: null
+
+cases:
+  - id: dev_01
+    input: "tum kya kar rahe ho"
+    expected_tokens: "tum/h kya/h kar/h rahe/h ho/h"
+    expected_native: "तुम क्या कर रहे हो"
+    expected_english: "What are you doing?"
+    difficulty: easy
+    tags: [plain]
+  - id: dev_02
+    input: "mujhe ek cup chai chahiye"
+    expected_tokens: "mujhe/h ek/h cup/e chai/h chahiye/h"
+    expected_native: "मुझे एक cup चाय चाहिए"
+    expected_english: "I want a cup of tea"
+    difficulty: easy
+    tags: [loanword]
+  - id: dev_03
+    input: "kal match dekhne chalein?"
+    expected_tokens: "kal/h match/e dekhne/h chalein/h ?/p"
+    expected_native: "कल match देखने चलें?"
+    expected_english: "Shall we go and watch the match tomorrow?"
+    difficulty: easy
+    tags: [loanword]
+  - id: dev_04
+    input: "Neha ne mujhe call kiya tha"
+    expected_tokens: "Neha/ne ne/h mujhe/h call/e kiya/h tha/h"
+    expected_native: "Neha ने मुझे call किया था"
+    expected_english: "Neha had called me"
+    difficulty: hard
+    tags: [named_entity, hinglish_verb]
+  - id: dev_05
+    input: "is project ka deadline kab hai"
+    expected_tokens: "is/h project/e ka/h deadline/e kab/h hai/h"
+    expected_native: "इस project का deadline कब है"
+    expected_english: "When is this project's deadline?"
+    difficulty: medium
+    tags: [ambiguous, loanword]
+  - id: dev_06
+    input: "main abhi busy hoon, baad me baat karte hain"
+    expected_tokens: "main/h abhi/h busy/e hoon/h ,/p baad/h me/h baat/h karte/h hain/h"
+    expected_native: "मैं अभी busy हूं, बाद में बात करते हैं"
+    expected_english: "I'm busy right now, let's talk later"
+    difficulty: medium
+    tags: [ambiguous]
+  - id: dev_07
+    input: "unka flight cancel ho gaya"
+    expected_tokens: "unka/h flight/e cancel/e ho/h gaya/h"
+    expected_native: "उनका flight cancel हो गया"
+    expected_english: "Their flight got cancelled"
+    difficulty: easy
+    tags: [loanword]
+  - id: dev_08
+    input: "hum to bas time pass kar rahe the"
+    expected_tokens: "hum/h to/h bas/h time/e pass/e kar/h rahe/h the/h"
+    expected_native: "हम तो बस time pass कर रहे थे"
+    expected_english: "We were just passing time"
+    difficulty: hard
+    tags: [ambiguous, hinglish_verb]
+  - id: dev_09
+    input: "yeh movie bahut boring thi"
+    expected_tokens: "yeh/h movie/e bahut/h boring/e thi/h"
+    expected_native: "यह movie बहुत boring थी"
+    expected_english: "This movie was very boring"
+    difficulty: easy
+    tags: [loanword]
+  - id: dev_10
+    input: "please mujhe notes bhej do"
+    expected_tokens: "please/e mujhe/h notes/e bhej/h do/h"
+    expected_native: "please मुझे notes भेज दो"
+    expected_english: "Please send me the notes"
+    difficulty: medium
+    tags: [loanword, ambiguous]
+  - id: dev_11
+    input: "Kavya aur Arjun Pune me rehte hain"
+    expected_tokens: "Kavya/ne aur/h Arjun/ne Pune/ne me/h rehte/h hain/h"
+    expected_native: "Kavya और Arjun Pune में रहते हैं"
+    expected_english: "Kavya and Arjun live in Pune"
+    difficulty: hard
+    tags: [named_entity, ambiguous]
+  - id: dev_12
+    input: "mera result accha aaya"
+    expected_tokens: "mera/h result/e accha/h aaya/h"
+    expected_native: "मेरा result अच्छा आया"
+    expected_english: "My result came out well"
+    difficulty: easy
+    tags: [loanword]
+  - id: dev_13
+    input: "kya tum mujhe pen de sakte ho?"
+    expected_tokens: "kya/h tum/h mujhe/h pen/e de/h sakte/h ho/h ?/p"
+    expected_native: "क्या तुम मुझे pen दे सकते हो?"
+    expected_english: "Can you give me a pen?"
+    difficulty: easy
+    tags: [loanword]
+  - id: dev_14
+    input: "doctor ne dawai lene ko kaha hai"
+    expected_tokens: "doctor/e ne/h dawai/h lene/h ko/h kaha/h hai/h"
+    expected_native: "doctor ने दवाई लेने को कहा है"
+    expected_english: "The doctor has said to take the medicine"
+    difficulty: easy
+    tags: [loanword]
+  - id: dev_15
+    input: "aaj traffic bahut zyada tha"
+    expected_tokens: "aaj/h traffic/e bahut/h zyada/h tha/h"
+    expected_native: "आज traffic बहुत ज़्यादा था"
+    expected_english: "There was a lot of traffic today"
+    difficulty: medium
+    tags: [loanword]
+  - id: dev_16
+    input: "kal se gym join karunga"
+    expected_tokens: "kal/h se/h gym/e join/e karunga/h"
+    expected_native: "कल से gym join करूंगा"
+    expected_english: "I will join the gym from tomorrow"
+    difficulty: easy
+    tags: [hinglish_verb]
+  - id: dev_17
+    input: "go to the market and buy milk"
+    expected_tokens: "go/e to/e the/e market/e and/e buy/e milk/e"
+    expected_native: "go to the market and buy milk"
+    expected_english: "go to the market and buy milk"
+    difficulty: medium
+    tags: [ambiguous]
+  - id: dev_18
+    input: "unhone mujhe party me bulaya"
+    expected_tokens: "unhone/h mujhe/h party/e me/h bulaya/h"
+    expected_native: "उन्होंने मुझे party में बुलाया"
+    expected_english: "They invited me to the party"
+    difficulty: medium
+    tags: [ambiguous, loanword]
+  - id: dev_19
+    input: "mere paas sirf 200 rupaye hain"
+    expected_tokens: "mere/h paas/h sirf/h 200/n rupaye/h hain/h"
+    expected_native: "मेरे पास सिर्फ 200 रुपये हैं"
+    expected_english: "I have only 200 rupees"
+    difficulty: easy
+    tags: [plain]
+  - id: dev_20
+    input: "जल्दी घर आ जाना"
+    expected_tokens: "जल्दी/d घर/d आ/d जाना/d"
+    expected_native: "जल्दी घर आ जाना"
+    expected_english: "Come home soon"
+    difficulty: easy
+    tags: [already_devanagari]

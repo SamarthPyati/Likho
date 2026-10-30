@@ -190,6 +190,30 @@ produce, and `Rohit → रोहित` is a judgement call the user should own
 Set `kind_confidence` from which signal decided, and log the distribution —
 it is directly useful for the failure analysis.
 
+**As built (M2), and why it differs.** The Aksharantar training split turned
+out to be unusable as a Hindi lexicon: it lacks the commonest words (`kal`,
+`hai`, `ke`, `nahi` are absent; they appear to be held out for the test
+splits). And `th` is common in romanized Hindi (`tha`, `thoda`), so it is
+not an English cue. `likho/tokenize.py` instead runs a cascade, each step
+seeing only what earlier steps left undecided:
+
+| Step | Signal | Rule |
+|---|---|---|
+| 1 | orthography | ALL CAPS → ENGLISH; Capitalised mid-sentence → NAMED_ENTITY; English-only suffix on an unknown word → ENGLISH |
+| 2 | dictionary | `E` = English Zipf of the word, `H` = Hindi Zipf of IndicXlit's top candidate (both from wordfreq, committed in `likho/data/`). Plausible in only one language → that language |
+| 3 | frequency | `H − E` ≥ 0.75 → HINDI, ≤ −0.75 → ENGLISH |
+| — | loanword | close call where the Hindi reading is uncommon (`bank` → बैंक) → ENGLISH (U5) |
+| 4 | context | homographs — both readings common (`H` ≥ 6 and `E` ≥ 5, or a close call with `H` ≥ 6: `to`, `me`, `is`, `the`) — take the sentence's majority language |
+| 5 | llm | one Param-1 call per sentence for homographs with no majority |
+| 6 | fallback | HINDI |
+
+Thresholds were tuned on `eval/data/dev_cases.yaml` only. Each signal has a
+distinct `kind_confidence` (`likho.tokenize.CONFIDENCE`), so the deciding
+signal is recoverable from any `Token`; the eval prints the distribution.
+
+Known limitation: a name at the start of a sentence (`Priya aur main…`) is
+indistinguishable from a capitalised Hindi word and is tagged HINDI (F7).
+
 **Known-hard cases.** Build the test set around these deliberately:
 
 - Words that are both: `to` (English) vs `to` (Hindi तो), `me` (English) vs
