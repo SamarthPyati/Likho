@@ -9,26 +9,44 @@ and checkpoints do move.
 | Role | Model | Size | Licence |
 |---|---|---|---|
 | Transliteration | IndicXlit via `ai4bharat-transliteration` | ~11M | MIT (code + model) |
-| Rewrite + router | `bharatgenai/Param-1-2.9B-Instruct` | 2.9B | BharatGen non-commercial |
-| Translation | `ai4bharat/indictrans2-indic-en-1B` | 1.1B | MIT |
+| Rewrite + router | `bharatgenai/Param-1-2.9B-Instruct` | 2.9B | **Unresolved** — see note |
+| Translation | `ai4bharat/indictrans2-indic-en-1B` | 1.1B | MIT, gated |
 
-**Licence note.** Param-1's SFT checkpoint is released under a
-non-commercial licence. This is a course project, which is fine, but say so
-in the README and do not deploy it publicly as a product.
+**Licence note.** As of October 2026 the Param-1 model card says apache-2.0
+in its metadata and MIT in its text; this document originally said
+"BharatGen non-commercial". Read the repo's LICENSE file and settle it before
+the README states a licence. Either way the card calls it an early research
+checkpoint not for production, so do not deploy it publicly as a product.
+
+**Gated.** Both IndicTrans2 repos require logging in and accepting their
+terms on Hugging Face; each team member does this once and sets `HF_TOKEN`.
 
 ## 2. IndicXlit — transliteration
 
 ### 2.1 Install
 
 ```bash
-pip install ai4bharat-transliteration==1.1.3
+make setup-models   # installs requirements-models.txt
 ```
 
-Do not try to use the `AI4Bharat/IndicXlit` GitHub repo directly. It is
-fairseq-based and pinned to an old fairseq that fights with modern
-`transformers` and `numpy`. The pip package wraps the same model and is what
-you want. (The project brief links `AI4Bharat/IndianNLP-Transliteration`,
-which is the older repo — the current one is `AI4Bharat/IndicXlit`.)
+The pip package (1.1.3, released 2022) **does depend on fairseq** — it is
+not a way around it. Verified working on Python 3.10 / macOS arm64,
+October 2026, with the pins in `requirements-models.txt`:
+
+- `fairseq==0.12.2` has no wheels past Python 3.8, so it is **built from
+  source** — a C compiler is needed (Xcode CLT on macOS, `build-essential`
+  on Linux). It pulls `hydra-core==1.0.7` / `omegaconf==2.0.6`.
+- `numpy==2.2.6` and `torch==2.14.1` both work.
+- **torch ≥ 2.6 refuses the checkpoint** (`weights_only=True` default; the
+  fairseq checkpoint pickles an `argparse.Namespace`). `registry.py`
+  allowlists exactly that class with `torch.serialization.add_safe_globals`
+  rather than pinning an old torch, which newer `transformers` would reject.
+- First use downloads ~930 MB (121 MB model + 812 MB rescoring dictionaries)
+  into the package directory inside `.venv`, **not** the HF cache.
+- Load ≈ 4 s on CPU; one 5-word sentence ≈ 0.1 s.
+
+The project brief links `AI4Bharat/IndianNLP-Transliteration`, which is the
+older repo — the current one is `AI4Bharat/IndicXlit`. Use the pip package.
 
 ### 2.2 Usage
 
@@ -98,7 +116,11 @@ out = model.generate(inputs.to(model.device), max_new_tokens=256)
 ### 3.3 Resource planning
 
 - bf16 ≈ 6 GB VRAM. Fits a Colab T4 (16 GB) alongside IndicTrans2 at fp16
-  (~2.5 GB) with room left.
+  (~2.5 GB) with room left. **But the T4 has no native bf16** — load in
+  `torch.float16` (or 4-bit) there, and check outputs match bf16 on a few
+  prompts.
+- Context window is 2048 tokens (`max_position_embeddings`). Keep router and
+  tiebreak prompts short.
 - No GPU? Community GGUF quantizations exist (Q4_K_M ≈ 1.8 GB) and run under
   Ollama or `llama.cpp`. Useful for local development. Verify the quant
   against a few outputs before trusting it for evaluation numbers.
@@ -126,8 +148,8 @@ out = model.generate(inputs.to(model.device), max_new_tokens=256)
 
 `ai4bharat/indictrans2-indic-en-1B` for Hindi → English. Distilled variants
 (~200M) exist in the same HF collection and are the right choice if you are
-CPU-only — confirm the exact repo ID in the collection rather than guessing
-it.
+CPU-only: `ai4bharat/indictrans2-indic-en-dist-200M` (MIT, gated; confirmed
+October 2026).
 
 ### 4.2 Usage
 
@@ -182,8 +204,9 @@ translations = ip.postprocess_batch(decoded, lang="eng_Latn")
 | Hand-built code-mixed set | Token classification + end-to-end | we write it |
 
 Aksharantar holds ~26M pairs across 21 languages, and its test set has ~103k
-word pairs across 19 languages, split by native-origin / foreign / frequent /
-rare. **That split is the backbone of the failure analysis** — report
+word pairs across 19 languages. The Hindi test split is labelled by source:
+Dakshina, AK-Freq, AK-NEI (Indian named entities), AK-NEF (foreign named
+entities) — see `docs/EVALUATION.md` §1.1. **That split is the backbone of the failure analysis** — report
 accuracy per category, not just overall.
 
 Sample 50 Hindi pairs with a fixed seed, commit the sample as a TSV, and

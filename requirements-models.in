@@ -1,0 +1,4 @@
+# Real model stack, on top of the core deps. Not needed for MOCK_MODELS=1 / CI.
+# Install with `make setup-models`.
+-r requirements.in
+ai4bharat-transliteration==1.1.3  # pulls fairseq 0.12.2 (built from source on py3.10)

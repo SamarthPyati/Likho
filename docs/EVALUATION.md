@@ -15,9 +15,25 @@ committed to the repo, never resampled. Columns:
 roman	devanagari	category
 ```
 
-`category` is Aksharantar's own: `native`, `foreign`, `frequent`, `rare`.
-Sample roughly evenly across the four so the per-category breakdown has
-enough support to mean anything — about 12 or 13 each.
+`category` is Aksharantar's own `source` label for the Hindi test split
+(10,112 pairs; checked October 2026):
+
+| `category` | Aksharantar `source` | Pairs in test split | What it is |
+|---|---|---|---|
+| `dakshina` | Dakshina | 4451 | General vocabulary |
+| `ak_freq` | AK-Freq | 3647 | Most frequent words |
+| `ak_nei` | AK-NEI | 1188 | Indian named entities |
+| `ak_nef` | AK-NEF | 826 | Foreign named entities |
+
+There is no native/foreign/frequent/rare split in the released data; these
+four labels are what exists. The sample is stratified 13/13/12/12 so the
+per-category breakdown has enough support to mean anything. Regenerate it
+only with `python -m eval.sample_aksharantar path/to/hin_test.json`
+(script committed; seed and per-category counts are fixed in it).
+
+Some references are themselves debatable (nukta present or absent, e.g.
+`firozpur` → फ़िरोज़पुर). That is reference noise, not model error, and the
+failure analysis should say so rather than hide it.
 
 This set measures the transliteration stage in isolation, against published
 ground truth we did not write ourselves. That independence is the reason it

@@ -10,14 +10,14 @@ previous one's criteria pass.
 
 **Goal:** everyone can work in parallel after this.
 
-- [ ] Repo, `.gitignore` (weights, `.env`, `__pycache__`, `eval/results/*.tmp`)
-- [ ] `requirements.txt`, every dep pinned with `==`
-- [ ] `Makefile` with `setup dev api test eval lint`
-- [ ] `likho/schemas.py` — all models from `docs/ARCHITECTURE.md` §3, verbatim
-- [ ] `likho/config.py` — pydantic-settings, reads `MOCK_MODELS`, `HF_TOKEN`
-- [ ] `likho/logging.py`
-- [ ] `likho/mocks.py` — stubs for all three models
-- [ ] CI: GitHub Actions running `make lint test` with `MOCK_MODELS=1`
+- [x] Repo, `.gitignore` (weights, `.env`, `__pycache__`, `eval/results/*.tmp`)
+- [x] `requirements.txt`, every dep pinned with `==`
+- [x] `Makefile` with `setup dev api test eval lint`
+- [x] `likho/schemas.py` — all models from `docs/ARCHITECTURE.md` §3, verbatim
+- [x] `likho/config.py` — pydantic-settings, reads `MOCK_MODELS`, `HF_TOKEN`
+- [x] `likho/logging.py`
+- [x] `likho/mocks.py` — stubs for all three models
+- [x] CI: GitHub Actions running `make lint test` with `MOCK_MODELS=1`
 
 **Accept when:** `make test` passes on a clean checkout with no GPU and no
 model downloads. `python -c "from likho.schemas import AssistResponse"`
@@ -29,12 +29,12 @@ works. CI is green.
 
 ## M1 — Transliteration stage
 
-- [ ] `likho/registry.py` — `get_xlit_engine()` singleton, mock-aware
-- [ ] `likho/transliterate.py` — `transliterate_tokens(tokens, top_k) -> list[Token]`
-- [ ] Populates `candidates`, sets `chosen` to candidate 0 for now
-- [ ] Handles the empty string, numerals, punctuation without calling the model
-- [ ] `eval/data/aksharantar_sample.tsv` — 50 pairs, seed 3235, committed
-- [ ] `eval/metrics.py` — CER, top-1, top-k; unit-tested against worked examples
+- [x] `likho/registry.py` — `get_xlit_engine()` singleton, mock-aware
+- [x] `likho/transliterate.py` — `transliterate_tokens(tokens, top_k) -> list[Token]`
+- [x] Populates `candidates`, sets `chosen` to candidate 0 for now
+- [x] Handles the empty string, numerals, punctuation without calling the model
+- [x] `eval/data/aksharantar_sample.tsv` — 50 pairs, seed 3235, committed
+- [x] `eval/metrics.py` — CER, top-1, top-k; unit-tested against worked examples
 
 **Accept when:** `python -m eval.run_eval --stage transliterate` prints top-1,
 top-5 and CER overall and per Aksharantar category. Metric functions have

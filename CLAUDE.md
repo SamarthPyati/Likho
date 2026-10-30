@@ -46,7 +46,8 @@ and `docs/ARCHITECTURE.md` wins on structure.
 ## Commands
 
 ```bash
-make setup          # venv + pinned deps
+make setup          # Python 3.10 venv + pinned core deps (enough for MOCK_MODELS=1)
+make setup-models   # + real model stack (IndicXlit/fairseq/torch); needs a C compiler
 make dev            # Gradio app on :7860, talks to local API
 make api            # FastAPI on :8000
 make test           # pytest, runs with MOCK_MODELS=1
@@ -66,6 +67,9 @@ make lint           # ruff + black --check
 
 ## Things that will bite you
 
+- `ai4bharat-transliteration` depends on fairseq, built from source, and its
+  checkpoint needs `argparse.Namespace` allowlisted under torch ≥ 2.6. Both
+  are handled — see `docs/MODELS.md` §2.1 before touching those pins.
 - `ai4bharat-transliteration` is **word-level**. `translit_sentence` exists
   but has no sentence context; the model cannot disambiguate homographs from
   surrounding words. Reranking is our job, not the model's. See
