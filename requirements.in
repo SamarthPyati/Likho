@@ -1,0 +1,13 @@
+# Core runtime + dev tooling. Runs with MOCK_MODELS=1 on any laptop.
+# Model-stack deps (torch, transformers, IndicXlit, IndicTransToolkit) are added
+# in M1/M4 once they install cleanly on Python 3.10.
+pydantic
+pydantic-settings
+pyyaml
+fastapi
+uvicorn
+httpx
+gradio
+pytest
+ruff
+black

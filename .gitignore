@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Secrets
+.env
+
+# Model weights — these live in the HF cache, never in the repo
+*.pt
+*.bin
+*.gguf
+*.safetensors
+models/
+
+# Eval scratch output (committed results are *.json / *.csv)
+eval/results/*.tmp
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
