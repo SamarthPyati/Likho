@@ -124,6 +124,12 @@ rate is a legitimate finding about early-checkpoint models.
 
 ### 2.4 Rewrite
 
+**As built.** `python -m eval.run_eval --stage rewrite` rewrites each test
+case's `expected_native` (gold Devanagari, so transliteration errors do not
+leak in) in every register, counts rejections by reason, and judges the
+accepted ones with `eval/judge.py`. Param-1 judges its own rewrites, so
+self-preference bias is possible — the human rubric is the check on it.
+
 No ground truth exists, so use two independent judgements:
 
 1. **LLM-as-judge**, 1–5 on meaning preservation, register match, fluency.

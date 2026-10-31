@@ -261,6 +261,31 @@ worth putting in the report, whichever direction it goes.
   Aksharantar words (no context) and for the gold-HINDI tokens of the
   code-mixed sentences, plus fixed/broken counts and every F8 case.
 
+## 5a. Router and rewrite (as built, M4)
+
+**Router** (`likho/router.py`). Param-1 returns one *intent*, not a stage
+list: `roman_hinglish`, `mixed_script`, `devanagari`, `english`, `empty`.
+`STAGES[intent]` maps it to stages. The LLM's answer is used only if it
+parses, names a known intent, and is possible given the text's script (it
+cannot call Roman text `devanagari`). Otherwise `rule_intent` decides —
+script counts, then the M2 tagger for Roman-only text — and
+`Route.source = "rule_fallback"`. Translation is not routed; the pipeline
+appends it when `AssistRequest.translate` is set.
+
+Finding to report: on the 30 committed router cases the rule router alone
+scores 30/30, so the LLM router can at best tie it there. Its value is
+robustness on inputs the rules have not seen, which this set does not
+measure.
+
+**Rewrite** (`likho/rewrite.py`). Prompt fixes meaning, forbids additions and
+omissions, keeps English words and names. The reply is cleaned (preamble,
+fences, quotes, echoed tags) and rejected — `StageFailure` → `StageError`,
+input preserved — if empty, outside 0.5×–1.6× the input length, or switched
+from Devanagari to mostly Roman.
+
+**Prompt convention.** Every Param-1 prompt starts `TASK: <name>` (route,
+tag, rewrite, judge); `MockLLM` dispatches on it.
+
 ## 6. Model loading
 
 `likho/registry.py` holds one lazily-initialised singleton per model.

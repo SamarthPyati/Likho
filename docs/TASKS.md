@@ -79,13 +79,15 @@ a finding either way — do not tune until it does.
 
 ## M4 — Router and rewrite (the GenAI component)
 
-- [ ] `likho/registry.py` — `get_llm()` singleton for Param-1
-- [ ] `likho/router.py` — LLM intent classification, strict-JSON prompt,
+- [x] `likho/registry.py` — `get_llm()` singleton for Param-1
+      (`Param1LLM`; CUDA → MPS → CPU, fp16 where bf16 is unsupported)
+- [ ] …loader verified against the real checkpoint (needs the ~6 GB download)
+- [x] `likho/router.py` — LLM intent classification, strict-JSON prompt,
       regex extraction, rule-based fallback, `Route.source` records which fired
-- [ ] `likho/rewrite.py` — register-controlled rewrite
-- [ ] Length-ratio validation (0.5×–1.6×); out of range → `StageError`, original preserved
-- [ ] `eval/data/router_cases.yaml` — 30 labelled cases
-- [ ] `eval/judge.py` — LLM-as-judge for rewrite, Lab 9 pattern
+- [x] `likho/rewrite.py` — register-controlled rewrite
+- [x] Length-ratio validation (0.5×–1.6×); out of range → `StageError`, original preserved
+- [x] `eval/data/router_cases.yaml` — 30 labelled cases
+- [x] `eval/judge.py` — LLM-as-judge for rewrite, Lab 9 pattern
 
 **Accept when:** router accuracy and LLM-judge rewrite scores both appear in
 the metrics JSON. Fallback rate is reported. A deliberately malformed LLM

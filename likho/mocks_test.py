@@ -32,7 +32,7 @@ def test_naive_transliterate_examples():
 
 def test_llm_route_returns_parseable_json():
     out = json.loads(MockLLM().generate("TASK: route\nInput: kal milte hain"))
-    assert out["stages"][0] == "route"
+    assert out["intent"] == "roman_hinglish"
 
 
 def test_llm_rewrite_is_identity():

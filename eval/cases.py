@@ -59,3 +59,14 @@ def load_cases(split: str = "test") -> list[Case]:
             entry = {**entry, "expected_tokens": parse_compact_tokens(entry["expected_tokens"])}
         cases.append(Case.model_validate(entry))
     return cases
+
+
+class RouterCase(BaseModel):
+    id: str
+    input: str
+    expected_intent: str
+
+
+def load_router_cases() -> list[RouterCase]:
+    raw = yaml.safe_load((DATA / "router_cases.yaml").read_text(encoding="utf-8"))
+    return [RouterCase.model_validate(entry) for entry in raw["cases"]]

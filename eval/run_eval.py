@@ -3,6 +3,10 @@
     python -m eval.run_eval --stage transliterate [--no-rescore] [--top-k 5]
     python -m eval.run_eval --stage tokenize [--split dev] [--no-llm]
     python -m eval.run_eval --stage rerank [--split dev [--tune]]
+    python -m eval.run_eval --stage route [--no-llm]
+    python -m eval.run_eval --stage rewrite [--register formal] [--limit 10]
+
+Any stage: --out PATH also writes the result as JSON.
 
 Stages are added milestone by milestone; M6 adds the full run and the
 metrics JSON + per-case CSV in eval/results/.
@@ -11,10 +15,13 @@ metrics JSON + per-case CSV in eval/results/.
 import argparse
 import csv
 import itertools
+import json
+import statistics
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from eval.cases import load_cases
+from eval.cases import load_cases, load_router_cases
+from eval.judge import AXES, judge
 from eval.metrics import (
     classification_report,
     confusion_matrix,
@@ -25,10 +32,13 @@ from eval.metrics import (
     top_k_accuracy,
 )
 from likho.config import settings
+from likho.errors import StageFailure
 from likho.logging import get_logger
 from likho.registry import get_xlit_engine
 from likho.rerank import DEFAULT_WEIGHTS, OFF, RerankWeights, rerank_tokens
-from likho.schemas import Token, TokenKind
+from likho.rewrite import rewrite
+from likho.router import STAGES, Intent, route
+from likho.schemas import Register, Token, TokenKind
 from likho.tokenize import SIGNAL_BY_CONFIDENCE, split, tag
 from likho.transliterate import transliterate_tokens
 
@@ -256,6 +266,91 @@ def print_rerank(result: dict) -> None:
     print("\n".join(lines))  # CLI report output, not logging
 
 
+def eval_route(use_llm: bool) -> dict:
+    """Exact-match accuracy of the stage list, and how often the rule fallback fired."""
+    rows = []
+    for case in load_router_cases():
+        r = route(case.input, use_llm=use_llm)
+        rows.append(
+            {
+                "case": case.id,
+                "expected_intent": case.expected_intent,
+                "stages": [s.value for s in r.stages],
+                "correct": r.stages == STAGES[Intent(case.expected_intent)],
+                "source": r.source,
+            }
+        )
+    n = len(rows)
+    return {
+        "n": n,
+        "use_llm": use_llm,
+        "accuracy": sum(r["correct"] for r in rows) / n,
+        "fallback_rate": sum(r["source"] == "rule_fallback" for r in rows) / n,
+        "errors": [r for r in rows if not r["correct"]],
+    }
+
+
+def eval_rewrite(registers: list[Register], limit: int | None) -> dict:
+    """Rewrite the gold Devanagari of each test case in each register and judge the
+    accepted ones. Rejections (StageFailure) are counted by reason, not judged."""
+    cases = load_cases("test")[:limit]
+    out: dict = {"n_cases": len(cases), "registers": {}}
+    for register in registers:
+        scores, rejected, ratios = [], Counter(), []
+        for case in cases:
+            try:
+                rewritten = rewrite(case.expected_native, register)
+            except StageFailure as failure:
+                rejected[failure.error.message] += 1
+                continue
+            ratios.append(len(rewritten) / max(1, len(case.expected_native)))
+            scores.append(judge(case.expected_native, rewritten, register))
+        judged = [s for s in scores if s.parsed]
+        out["registers"][register.value] = {
+            "accepted": len(scores),
+            "rejected": sum(rejected.values()),
+            "rejected_by_reason": dict(rejected),
+            "mean_length_ratio": statistics.fmean(ratios) if ratios else None,
+            "judge_fallback_rate": 1 - len(judged) / len(scores) if scores else None,
+            "judge_mean": {
+                axis: statistics.fmean(getattr(s, axis) for s in judged) if judged else None
+                for axis in AXES
+            },
+        }
+    return out
+
+
+def print_route(result: dict) -> None:
+    lines = [
+        f"router  n={result['n']}  llm={result['use_llm']}  accuracy={result['accuracy']:.0%}  "
+        f"fallback_rate={result['fallback_rate']:.0%}",
+        f"errors ({len(result['errors'])}):",
+    ]
+    lines += [
+        f"  {e['case']}  expected={e['expected_intent']:<15} got={e['stages']} via {e['source']}"
+        for e in result["errors"]
+    ]
+    print("\n".join(lines))  # CLI report output, not logging
+
+
+def print_rewrite(result: dict) -> None:
+    lines = [f"rewrite  n_cases={result['n_cases']} (gold Devanagari as input)"]
+    for register, r in result["registers"].items():
+        means = r["judge_mean"]
+        judged = (
+            "  ".join(f"{a}={means[a]:.2f}" for a in AXES)
+            if means["meaning"] is not None
+            else "none parsed"
+        )
+        lines.append(
+            f"  {register:<8} accepted={r['accepted']} rejected={r['rejected']}  judge: {judged}"
+        )
+        if r["judge_fallback_rate"] is not None:
+            lines.append(f"           judge fallback rate {r['judge_fallback_rate']:.0%}")
+        lines += [f"           {n}× {reason}" for reason, n in r["rejected_by_reason"].items()]
+    print("\n".join(lines))  # CLI report output, not logging
+
+
 def print_table(title: str, results: dict[str, dict[str, float]]) -> None:
     metrics = [m for m in next(iter(results.values())) if m != "n"]
     logger.info(title)
@@ -269,7 +364,14 @@ def print_table(title: str, results: dict[str, dict[str, float]]) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Likho evaluation harness")
-    parser.add_argument("--stage", choices=["transliterate", "tokenize", "rerank"], required=True)
+    parser.add_argument(
+        "--stage",
+        choices=["transliterate", "tokenize", "rerank", "route", "rewrite"],
+        required=True,
+    )
+    parser.add_argument("--register", choices=[r.value for r in Register], default=None)
+    parser.add_argument("--limit", type=int, default=None, help="rewrite: first N cases only")
+    parser.add_argument("--out", type=Path, default=None, help="also write the result as JSON")
     parser.add_argument("--tune", action="store_true", help="rerank: grid-search on dev")
     parser.add_argument("--split", choices=["test", "dev"], default="test")
     parser.add_argument("--llm", action=argparse.BooleanOptionalAction, default=True)
@@ -280,9 +382,10 @@ def main() -> None:
     if settings.mock_models:
         logger.warning("MOCK_MODELS=1: numbers below come from stubs and must not be reported")
 
+    result: dict | None = None
     if args.stage == "transliterate":
-        results = eval_transliterate(args.top_k, args.rescore)
-        print_table(f"transliterate (IndicXlit, rescore={args.rescore})", results)
+        result = eval_transliterate(args.top_k, args.rescore)
+        print_table(f"transliterate (IndicXlit, rescore={args.rescore})", result)
     elif args.stage == "tokenize":
         result = eval_tokenize(args.split, args.llm)
         print_tokenize(f"tokenize split={args.split} llm_tiebreak={args.llm}", result)
@@ -292,7 +395,21 @@ def main() -> None:
         for strict, lenient, w in tune_rerank(args.top_k)[:8]:
             print(f"β={w.beta:<5} γ={w.gamma:<5} strict={strict:.1%} lenient={lenient:.1%}")
     elif args.stage == "rerank":
-        print_rerank(eval_rerank(args.split, args.top_k, DEFAULT_WEIGHTS))
+        result = eval_rerank(args.split, args.top_k, DEFAULT_WEIGHTS)
+        print_rerank(result)
+    elif args.stage == "route":
+        result = eval_route(args.llm)
+        print_route(result)
+    elif args.stage == "rewrite":
+        registers = [Register(args.register)] if args.register else list(Register)
+        result = eval_rewrite(registers, args.limit)
+        print_rewrite(result)
+
+    if args.out and result is not None:
+        meta = {"stage": args.stage, "mock_models": settings.mock_models}
+        args.out.write_text(
+            json.dumps({**meta, "result": result}, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
 
 
 if __name__ == "__main__":

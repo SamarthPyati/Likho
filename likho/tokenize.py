@@ -17,7 +17,6 @@ left undecided, and `kind_confidence` records which step decided:
 मीटिंग and `kal` as कल.
 """
 
-import json
 import re
 from collections import Counter
 from dataclasses import dataclass
@@ -25,6 +24,7 @@ from dataclasses import dataclass
 from likho.config import settings
 from likho.lexicon import english_zipf, hindi_zipf
 from likho.logging import get_logger
+from likho.parsing import extract_json_object
 from likho.registry import LLMLike, XlitEngineLike, get_llm, get_xlit_engine
 from likho.schemas import Token, TokenKind
 from likho.transliterate import xlit_candidates
@@ -197,7 +197,6 @@ Words: <text>{words}</text>
 Reply with only a JSON object mapping each numbered word to "hindi" or "english",
 for example {{"3:to": "hindi"}}."""
 
-JSON_RE = re.compile(r"\{[\s\S]*\}")
 _warned: set[str] = set()
 
 
@@ -214,15 +213,14 @@ def _resolve_by_llm(
     prompt = TAG_PROMPT.format(sentence=text, words=" ".join(keys))
     try:
         reply = (llm or get_llm()).generate(prompt, max_new_tokens=128, temperature=0.0)
-        match = JSON_RE.search(reply)
-        labels = json.loads(match.group()) if match else {}
     except Exception as exc:  # noqa: BLE001 — model, parse or loader failure: fall back
         name = type(exc).__name__
         if name not in _warned:
             _warned.add(name)
             logger.warning("tag tiebreak failed (%s); using fallback", name)
         return
-    if not isinstance(labels, dict):
+    labels = extract_json_object(reply)
+    if labels is None:
         return
     for key, label in labels.items():
         i = keys.get(str(key))

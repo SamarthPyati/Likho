@@ -182,10 +182,7 @@ class MockXlitEngine:
 _TASK_RE = re.compile(r"^TASK:\s*(\w+)", re.MULTILINE)
 _TEXT_RE = re.compile(r"<text>([\s\S]*?)</text>")
 
-_ROUTE_RESPONSE = {
-    "stages": ["route", "tokenize", "transliterate", "rerank", "rewrite"],
-    "reason": "mock: Roman-script input, full pipeline",
-}
+_ROUTE_RESPONSE = {"intent": "roman_hinglish", "reason": "mock: fixed intent"}
 _JUDGE_RESPONSE = {"meaning": 4, "register": 4, "fluency": 4}
 
 
