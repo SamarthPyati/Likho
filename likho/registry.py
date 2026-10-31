@@ -69,12 +69,22 @@ class Param1LLM:
             model_id, trust_remote_code=True, token=token
         )
         self.model = AutoModelForCausalLM.from_pretrained(
-            model_id, trust_remote_code=True, torch_dtype=dtype, token=token
+            model_id, trust_remote_code=True, dtype=dtype, token=token
         ).to(device)
         self.model.eval()
         self.device = device
+        eos = self.model.generation_config.eos_token_id
+        self.eos_ids = set(eos if isinstance(eos, list) else [eos])
 
     def generate(self, prompt: str, *, max_new_tokens: int = 256, temperature: float = 0.0) -> str:
+        """Greedy (temperature 0) or sampled decoding with a hand-rolled loop.
+
+        Param-1's remote modeling code predates transformers' Cache objects: it
+        indexes `past_key_values[0][0]` as a tuple, and `model.generate()` in
+        4.57 passes a DynamicCache instead, which crashes. Calling forward()
+        directly with the tuple cache it returns sidesteps that.
+        """
+        torch = self._torch
         messages = [{"role": "user", "content": prompt}]
         if getattr(self.tokenizer, "chat_template", None):
             input_ids = self.tokenizer.apply_chat_template(
@@ -82,17 +92,21 @@ class Param1LLM:
             )
         else:
             input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids
-        input_ids = input_ids.to(self.device)
-        sampling = {"do_sample": True, "temperature": temperature} if temperature > 0 else {}
-        with self._torch.no_grad():
-            output = self.model.generate(
-                input_ids,
-                attention_mask=self._torch.ones_like(input_ids),
-                max_new_tokens=max_new_tokens,
-                pad_token_id=self.tokenizer.pad_token_id or self.tokenizer.eos_token_id,
-                **sampling,
-            )
-        return self.tokenizer.decode(output[0, input_ids.shape[1] :], skip_special_tokens=True)
+        next_input, past, generated = input_ids.to(self.device), None, []
+        with torch.no_grad():
+            for _ in range(max_new_tokens):
+                out = self.model(input_ids=next_input, past_key_values=past, use_cache=True)
+                logits, past = out.logits[0, -1].float(), out.past_key_values
+                if temperature > 0:
+                    probs = torch.softmax(logits / temperature, dim=-1)
+                    token = int(torch.multinomial(probs, num_samples=1))
+                else:
+                    token = int(torch.argmax(logits))
+                if token in self.eos_ids:
+                    break
+                generated.append(token)
+                next_input = torch.tensor([[token]], device=self.device)
+        return self.tokenizer.decode(generated, skip_special_tokens=True)
 
 
 @lru_cache(maxsize=1)
