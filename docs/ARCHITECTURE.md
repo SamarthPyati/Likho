@@ -245,6 +245,22 @@ Set α, β, γ on a 20-sentence dev split — do not tune them on the test set.
 Report top-1 accuracy with and without reranking. The delta is a result
 worth putting in the report, whichever direction it goes.
 
+**As built (M3).** `likho/rerank.py`, greedy left to right.
+
+- `model_rank_score` = −rank (IndicXlit's `translit_word` returns no scores).
+- Unigram = Hindi Zipf frequency from wordfreq (`likho/data/hi_freq.tsv`);
+  the Aksharantar Devanagari side is a word list without frequencies.
+- Bigram = log10 P(c | previous Devanagari word) with stupid backoff, from a
+  CC0 sample of AI4Bharat IndicCorpV2 Hindi (3.6M tokens,
+  `likho/data/hi_bigrams.tsv`, built by `python -m scripts.build_ngrams`).
+  A non-Devanagari token breaks the chain.
+- Weights α=1, β=2, γ=0.5 from a grid search on the dev split. β=2 sits on
+  a plateau where γ ∈ [0, 4] scores the same on dev, so γ=0.5 was picked as
+  the midpoint before the test set was run.
+- `python -m eval.run_eval --stage rerank` reports on/off top-1 for the
+  Aksharantar words (no context) and for the gold-HINDI tokens of the
+  code-mixed sentences, plus fixed/broken counts and every F8 case.
+
 ## 6. Model loading
 
 `likho/registry.py` holds one lazily-initialised singleton per model.

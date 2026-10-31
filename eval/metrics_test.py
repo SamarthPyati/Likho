@@ -5,6 +5,7 @@ from eval.metrics import (
     classification_report,
     confusion_matrix,
     corpus_cer,
+    fold_variants,
     levenshtein,
     macro_f1,
     normalize,
@@ -71,3 +72,10 @@ def test_classification_report_worked_example():
 def test_confusion_matrix_worked_example():
     matrix = confusion_matrix(["h", "e", "e"], ["h", "h", "e"], ["h", "e"])
     assert matrix == {"h": {"h": 1, "e": 0}, "e": {"h": 1, "e": 1}}
+
+
+def test_fold_variants_equates_spelling_variants_only():
+    assert fold_variants("हूँ") == fold_variants("हूं")
+    assert fold_variants("ज़रूरत") == fold_variants("जरूरत")
+    assert fold_variants("ज़") == fold_variants("ज")  # precomposed ज़
+    assert fold_variants("कल") != fold_variants("काल")

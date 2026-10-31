@@ -89,3 +89,12 @@ def confusion_matrix(
     for g, p in zip(gold, predicted, strict=True):
         matrix[g][p] += 1
     return matrix
+
+
+_VARIANT_FOLD = str.maketrans({"ँ": "ं", "़": None, "‌": None, "‍": None})
+
+
+def fold_variants(text: str) -> str:
+    """Lenient form for spelling-variant analysis: chandrabindu → anusvara,
+    nukta and zero-width joiners dropped (हूँ ≡ हूं, ज़रूरत ≡ जरूरत)."""
+    return unicodedata.normalize("NFD", normalize(text)).translate(_VARIANT_FOLD)

@@ -7,6 +7,7 @@ trusting membership alone.
 """
 
 import csv
+import math
 import unicodedata
 from functools import lru_cache
 from pathlib import Path
@@ -37,3 +38,36 @@ def english_zipf(word: str) -> float:
 def hindi_zipf(word: str) -> float:
     """Zipf frequency of a Devanagari word in Hindi; 0.0 if unlisted."""
     return _hindi().get(unicodedata.normalize("NFC", word), 0.0)
+
+
+BACKOFF_LOG10 = math.log10(0.4)  # "stupid backoff" penalty for an unseen bigram
+
+
+@lru_cache(maxsize=1)
+def _ngrams() -> tuple[dict[str, int], dict[tuple[str, str], int], int]:
+    unigrams: dict[str, int] = {}
+    bigrams: dict[tuple[str, str], int] = {}
+    total = 0
+    with (DATA / "hi_bigrams.tsv").open(encoding="utf-8") as f:
+        for line in f:
+            if line.startswith("# total_tokens"):
+                total = int(line.split("\t")[1])
+            if line.startswith(("#", "first\t")):
+                continue
+            first, second, count = line.rstrip("\n").split("\t")
+            if second:
+                bigrams[first, second] = int(count)
+            else:
+                unigrams[first] = int(count)
+    return unigrams, bigrams, total
+
+
+def bigram_log_prob(prev: str, word: str) -> float:
+    """log10 P(word | prev) from the IndicCorpV2 sample, with stupid backoff to
+    the unigram probability (count 0.5 for unseen words)."""
+    unigrams, bigrams, total = _ngrams()
+    prev, word = unicodedata.normalize("NFC", prev), unicodedata.normalize("NFC", word)
+    pair = bigrams.get((prev, word))
+    if pair:
+        return math.log10(pair / unigrams[prev])
+    return BACKOFF_LOG10 + math.log10(unigrams.get(word, 0.5) / total)

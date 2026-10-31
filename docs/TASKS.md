@@ -65,10 +65,11 @@ note in `eval/results/` explaining why not.
 
 ## M3 — Reranking
 
-- [ ] Unigram + bigram tables from the Aksharantar Hindi training split
-- [ ] `likho/rerank.py` — the scoring function from `docs/ARCHITECTURE.md` §5
-- [ ] α, β, γ tuned on a 20-sentence dev split, **not** the test set
-- [ ] `chosen_rank` recorded so F8 failures are identifiable
+- [x] Unigram + bigram tables (wordfreq unigrams + IndicCorpV2 bigrams; see
+      `docs/ARCHITECTURE.md` §5 "As built" for why not Aksharantar)
+- [x] `likho/rerank.py` — the scoring function from `docs/ARCHITECTURE.md` §5
+- [x] α, β, γ tuned on a 20-sentence dev split, **not** the test set
+- [x] `chosen_rank` recorded so F8 failures are identifiable
 
 **Accept when:** the eval harness reports top-1 accuracy with reranking on
 and off, as separate numbers, from one command. Whether reranking helps is
