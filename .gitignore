@@ -24,3 +24,7 @@ eval/results/*.tmp
 .DS_Store
 .idea/
 .vscode/
+
+# Evaluation runs with MOCK_MODELS=1 (stub numbers, never reported)
+eval/results/mock-*
+eval/human/mock-*

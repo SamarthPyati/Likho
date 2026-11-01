@@ -12,3 +12,4 @@ pytest
 ruff
 black
 wordfreq
+sacrebleu  # chrF++ and BLEU for the translation eval

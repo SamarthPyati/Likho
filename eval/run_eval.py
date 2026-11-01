@@ -1,25 +1,29 @@
 """Offline evaluation harness. Depends on `likho/` only (CLAUDE.md rule 4).
 
+    python -m eval.run_eval [--run-id ID] [--compare eval/results/<run>_metrics.json]
+        the full run (`make eval`): every stage, all four ablations, the
+        metrics JSON + per-case CSV in eval/results/, and the human-rubric sheet
     python -m eval.run_eval --stage transliterate [--no-rescore] [--top-k 5]
     python -m eval.run_eval --stage tokenize [--split dev] [--no-llm]
     python -m eval.run_eval --stage rerank [--split dev [--tune]]
     python -m eval.run_eval --stage route [--no-llm]
     python -m eval.run_eval --stage rewrite [--register formal] [--limit 10]
 
-Any stage: --out PATH also writes the result as JSON.
-
-Stages are added milestone by milestone; M6 adds the full run and the
-metrics JSON + per-case CSV in eval/results/.
+Any single stage: --out PATH also writes the result as JSON.
 """
 
 import argparse
 import csv
 import itertools
 import json
+import random
 import statistics
+import sys
 from collections import Counter, defaultdict
+from datetime import datetime
 from pathlib import Path
 
+from eval import full
 from eval.cases import load_cases, load_router_cases
 from eval.judge import AXES, judge
 from eval.metrics import (
@@ -306,16 +310,23 @@ def eval_rewrite(registers: list[Register], limit: int | None) -> dict:
     accepted ones. Rejections (StageFailure) are counted by reason, not judged."""
     cases = load_cases("test")[:limit]
     out: dict = {"n_cases": len(cases), "registers": {}}
+    out["cases"] = []
     for register in registers:
         scores, rejected, ratios = [], Counter(), []
         for case in cases:
+            row = {"case": case.id, "register": register.value, "rewritten": None}
+            out["cases"].append(row)
             try:
                 rewritten = rewrite(case.expected_native, register)
             except StageFailure as failure:
                 rejected[failure.error.message] += 1
+                row["rejected"] = failure.error.message
                 continue
             ratios.append(len(rewritten) / max(1, len(case.expected_native)))
             scores.append(judge(case.expected_native, rewritten, register))
+            # prefixed: JudgeScore's own "register" field is a score, not the register
+            judge_scores = {f"judge_{k}": v for k, v in scores[-1].model_dump().items()}
+            row.update(rewritten=rewritten, **judge_scores)
         judged = [s for s in scores if s.parsed]
         out["registers"][register.value] = {
             "accepted": len(scores),
@@ -382,12 +393,147 @@ def print_table(title: str, results: dict[str, dict[str, float]]) -> None:
     print("\n".join(lines))  # CLI report output, not logging
 
 
+PRD_TARGETS = [  # docs/PRD.md §7: (name, value path, comparison, target)
+    ("transliteration top-1 (Aksharantar)", "transliterate.rescore_on.overall.top1", ">=", 0.70),
+    ("transliteration top-5 (Aksharantar)", "transliterate.rescore_on.overall.top5", ">=", 0.90),
+    ("transliteration CER (Aksharantar)", "transliterate.rescore_on.overall.cer", "<=", 0.15),
+    (
+        "token classification macro-F1 (HINDI/ENGLISH/NE)",
+        "tokenize.llm_tiebreak_on.macro_f1_hindi_english_ne",
+        ">=",
+        0.85,
+    ),
+    ("router accuracy", "route.llm_on.accuracy", ">=", 0.90),
+    ("rewrite meaning (LLM judge, 1-5)", "rewrite.judge_meaning_overall", ">=", 4.0),
+    ("translation chrF++", "translate.chrf_pp", ">=", 45.0),
+    ("hand-built code-mixed cases", "end_to_end.n", ">=", 50),
+]
+HUMAN_RUBRIC_CASES = 20
+HUMAN = Path(__file__).parent / "human"
+
+
+def _lookup(metrics: dict, path: str) -> object:
+    value: object = metrics
+    for key in path.split("."):
+        value = value.get(key) if isinstance(value, dict) else None
+    return value
+
+
+def prd_targets(metrics: dict) -> list[dict]:
+    out = []
+    for name, path, op, target in PRD_TARGETS:
+        value = _lookup(metrics, path)
+        met = None if value is None else (value >= target if op == ">=" else value <= target)
+        out.append({"criterion": name, "value": value, "target": f"{op} {target}", "met": met})
+    return out
+
+
+def write_human_rubric(run_id: str, rewrite_cases: list[dict], out_dir: Path = HUMAN) -> Path:
+    """A blind scoring sheet for two raters (§2.4): 20 cases, one accepted
+    rewrite each, registers rotated. Judge scores are left out on purpose;
+    `python -m eval.human` joins them back in."""
+    cases = {c.id: c for c in load_cases("test")}
+    accepted: dict[str, dict[str, dict]] = defaultdict(dict)
+    for row in rewrite_cases:
+        if row["rewritten"] is not None:
+            accepted[row["case"]][row["register"]] = row
+    chosen = sorted(random.Random(3235).sample(sorted(accepted), HUMAN_RUBRIC_CASES))
+    registers = [r.value for r in Register]
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / f"{run_id}_rubric.csv"
+    with path.open("w", encoding="utf-8", newline="") as f:
+        writer = csv.writer(f)
+        rater_cols = [f"{rater}_{axis}" for rater in ("rater_a", "rater_b") for axis in AXES]
+        writer.writerow(["run", "case", "register", "original", "rewritten", *rater_cols])
+        for i, case_id in enumerate(chosen):
+            rotation = registers[i % 3 :] + registers[: i % 3]
+            register = next(r for r in rotation if r in accepted[case_id])
+            row = accepted[case_id][register]
+            original = cases[case_id].expected_native
+            writer.writerow(
+                [run_id, case_id, register, original, row["rewritten"], *[""] * len(rater_cols)]
+            )
+    return path
+
+
+def run_all(run_id: str) -> tuple[dict, list[dict]]:
+    """Every stage, every ablation (§5), end to end. Returns (metrics, CSV rows)."""
+    metrics: dict = {"meta": full.meta(run_id)}
+    timings: dict = {}
+    cases = load_cases("test")
+
+    for rescore in (True, False):
+        get_xlit_engine(rescore=rescore)  # load before timing
+    on, timings["transliterate_50_words_rescore_on_s"] = full.timed(eval_transliterate, 5, True)
+    off, timings["transliterate_50_words_rescore_off_s"] = full.timed(eval_transliterate, 5, False)
+    metrics["transliterate"] = {"rescore_on": on, "rescore_off": off}  # ablation 2
+    logger.info("transliterate done")
+
+    tok_off, timings["tokenize_test_llm_off_s"] = full.timed(eval_tokenize, "test", False)
+    tok_on, timings["tokenize_test_llm_on_s"] = full.timed(eval_tokenize, "test", True)
+    metrics["tokenize"] = {"llm_tiebreak_on": tok_on, "llm_tiebreak_off": tok_off}  # ablation 3
+    logger.info("tokenize done")
+
+    metrics["rerank"] = eval_rerank("test", 5, DEFAULT_WEIGHTS)  # ablation 1
+    route_on, timings["route_30_cases_llm_on_s"] = full.timed(eval_route, True)
+    route_off, timings["route_30_cases_llm_off_s"] = full.timed(eval_route, False)
+    metrics["route"] = {"llm_on": route_on, "llm_off": route_off}
+    logger.info("rerank and route done")
+
+    rewrite_result, timings["rewrite_gold_all_registers_s"] = full.timed(
+        eval_rewrite, list(Register), None
+    )
+    judged = [c["judge_meaning"] for c in rewrite_result["cases"] if c.get("judge_parsed")]
+    rewrite_result["judge_meaning_overall"] = statistics.fmean(judged) if judged else None
+    metrics["rewrite"] = rewrite_result
+    logger.info("rewrite done")
+
+    metrics["translate"] = full.translation_stage(cases)
+    rows, responses = full.end_to_end(cases)
+    metrics["ablation_translit_sentence"] = full.translit_sentence_baseline(cases, rows)  # 4
+    metrics["end_to_end"] = full.summarise_e2e(rows)
+    metrics["end_to_end"]["translation"] = full.e2e_translation_scores(rows)
+    metrics["latency"] = {"e2e_per_stage": full.latency(responses), "runs_s": timings}
+    metrics["prd_targets"] = prd_targets(metrics)
+    return metrics, rows
+
+
+def print_summary(metrics: dict, json_path: Path) -> None:
+    e2e = metrics["end_to_end"]
+    lines = [
+        f"run {metrics['meta']['run']}  →  {json_path}",
+        f"end to end n={e2e['n']}: passed={e2e['passed']}  native ok={e2e['native_ok']} "
+        f"(lenient {e2e['native_ok_lenient']})  route ok={e2e['route_ok']}  "
+        f"rewrite ok={e2e['rewrite_ok']}  translation ok={e2e['translation_ok']}"
+        f"/{e2e['translation_evaluated']}",
+        "failures (primary): "
+        + ", ".join(f"{c}={n}" for c, n in e2e["failures_primary"].items() if n),
+        "",
+        "PRD §7 targets:",
+    ]
+    for t in metrics["prd_targets"]:
+        mark = {True: "met ", False: "MISS", None: "n/a "}[t["met"]]
+        value = t["value"] if not isinstance(t["value"], float) else round(t["value"], 3)
+        lines.append(f"  [{mark}] {t['criterion']}: {value} (target {t['target']})")
+    lat = metrics["latency"]["e2e_per_stage"]
+    lines += [
+        "",
+        "latency (ms)  "
+        + "  ".join(f"{s} p50={v['p50_ms']:.0f}/p95={v['p95_ms']:.0f}" for s, v in lat.items()),
+    ]
+    print("\n".join(lines))  # CLI report output, not logging
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Likho evaluation harness")
     parser.add_argument(
         "--stage",
-        choices=["transliterate", "tokenize", "rerank", "route", "rewrite"],
-        required=True,
+        choices=["all", "transliterate", "tokenize", "rerank", "route", "rewrite"],
+        default="all",
+    )
+    parser.add_argument("--run-id", default=None, help="all: results file prefix")
+    parser.add_argument(
+        "--compare", type=Path, default=None, help="all: diff against a committed metrics JSON"
     )
     parser.add_argument("--register", choices=[r.value for r in Register], default=None)
     parser.add_argument("--limit", type=int, default=None, help="rewrite: first N cases only")
@@ -403,6 +549,22 @@ def main() -> None:
         logger.warning("MOCK_MODELS=1: numbers below come from stubs and must not be reported")
 
     result: dict | None = None
+    if args.stage == "all":
+        run_id = args.run_id or datetime.now().strftime("%Y%m%d-%H%M")
+        if settings.mock_models:  # gitignored: stub numbers must never be committed
+            run_id = f"mock-{run_id}"
+        metrics, rows = run_all(run_id)
+        json_path = full.write_results(run_id, metrics, rows)
+        rubric = write_human_rubric(run_id, metrics["rewrite"]["cases"])
+        print_summary(metrics, json_path)
+        print(f"human rubric sheet: {rubric}")
+        if args.compare:
+            committed = json.loads(args.compare.read_text(encoding="utf-8"))
+            diffs = full.compare(metrics, committed)
+            print(f"\ncompare with {args.compare}: " + ("identical" if not diffs else ""))
+            print("\n".join(f"  {d}" for d in diffs))
+            sys.exit(1 if diffs else 0)
+        return
     if args.stage == "transliterate":
         result = eval_transliterate(args.top_k, args.rescore)
         print_table(f"transliterate (IndicXlit, rescore={args.rescore})", result)
