@@ -196,9 +196,16 @@ translations = ip.postprocess_batch(decoded, lang="eng_Latn")
   token without accepted terms gets HTTP 403, which `from_pretrained`
   raises as `OSError`. The API still starts: `/health` reports
   `degraded` and each translate request returns a `translate` StageError.
-- Not yet run in this repo with transformers 4.57.3: the model's remote code
-  predates it, so check `generate()` first (Param-1's remote code broke
-  there, §3.4).
+- With transformers 4.57.3, `generate()` crashes in the remote code
+  (`past_key_values[0][0]` is None: it expects tuple caches and gets an
+  empty `EncoderDecoderCache`). Fixed in `IndicTrans2Translator` by
+  overriding `_supports_default_dynamic_cache` to return False, so the model
+  keeps its own tuple cache and beam search reorders it with the model's
+  `_reorder_cache`. `use_cache=False` also avoids the crash but ran for
+  over ten minutes on four sentences.
+- Verified on an Apple M4 (MPS, fp16): ~2 s for the first sentence, 0.7 s
+  for a batch of four after that. Output is lowercased at times
+  ("tell rohit for tomorrow's meeting").
 - Skip `attn_implementation="flash_attention_2"` unless `flash_attn` is
   actually installed; it will not fall back gracefully.
 - Batch sentences rather than calling per sentence. The model is seq2seq and

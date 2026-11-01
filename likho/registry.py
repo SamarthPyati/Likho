@@ -185,6 +185,12 @@ class IndicTrans2Translator:
             model_id, trust_remote_code=True, dtype=dtype, token=token
         ).to(device)
         self.model.eval()
+        # The remote modeling code predates transformers' Cache objects: it reads
+        # `past_key_values[0][0]` as a tuple, and generate() in 4.57 would hand it
+        # an empty EncoderDecoderCache (crash). Declining the default cache makes
+        # generate() start from None and keep the model's own tuple cache, which
+        # beam search reorders through the model's `_reorder_cache`.
+        self.model._supports_default_dynamic_cache = lambda: False
         self.device = device
         self.processor = IndicProcessor(inference=True)
 
