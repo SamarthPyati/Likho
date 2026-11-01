@@ -213,3 +213,55 @@ evaluation:
 - If a target in `docs/PRD.md` §7 is missed, report the miss and explain it.
   A missed target with a good explanation scores better than a hit nobody
   believes.
+
+## 7. As built (M6)
+
+**Running it.** `make eval` (= `python -m eval.run_eval`) runs everything and
+writes, for run id `<run>` (default: local timestamp; `--run-id` to name it):
+
+- `eval/results/<run>_metrics.json` — sections `meta` (date, git commit,
+  hardware, model ids, settings), `transliterate` (rescore on/off),
+  `tokenize` (LLM tiebreak on/off), `rerank` (on/off), `route` (LLM on/off),
+  `rewrite` (gold Devanagari × 3 registers, judged, per case),
+  `translate` (gold Devanagari → English, chrF++/BLEU),
+  `end_to_end`, `ablation_translit_sentence`, `latency`, `prd_targets`.
+- `eval/results/<run>_cases.csv` — one row per test case: every stage's
+  output, pass flags, `failure` (primary F-code), `failures` (all codes),
+  and `detail` (which token, gold vs produced).
+- `eval/human/<run>_rubric.csv` — the blind human-rubric sheet (below).
+
+With `MOCK_MODELS=1` the run id is prefixed `mock-` and gitignored: stub
+numbers can never be committed by accident.
+
+**Reproducing.** `python -m eval.run_eval --compare eval/results/<run>_metrics.json`
+reruns and diffs against the committed file, ignoring `meta` and `latency`
+(wall-clock time is not reproducible). Exit status 1 on any difference.
+Decoding is greedy except the rewrite, whose sampling is reseeded per call
+(`LLM_SEED`), so results are deterministic on the same hardware and software.
+
+**End to end.** Each test case runs through `likho.pipeline.assist` with
+register `neutral` and translation on, exactly as the API would. A case
+passes when the route is right, the native script matches `expected_native`
+exactly (after NFC), the judge gives the rewrite meaning ≥ 4, and the
+translation's sentence chrF++ is ≥ 45. A translation the model could not
+produce because it is unavailable (gated weights) is *not evaluated* rather
+than failed; the JSON records how many were evaluated.
+
+**Classification rules** (`eval/failures.py`). The primary code is the
+earliest failing stage: F12 crash → F9 route → per-token codes in sentence
+order → F10 rewrite (rejected, or judge meaning < 4) → F11 translation.
+For a token whose output is wrong: tagged HINDI but gold ENGLISH → F5; gold
+HINDI tagged otherwise → F6; gold NE tagged HINDI → F7. For a correctly
+tagged Hindi token: gold among the candidates → F8; otherwise the character
+diff decides, in order: nukta → F4, i/ī u/ū a/ā → F1, retroflex/dental → F3,
+virama → F2. A diff matching none of these is `other` (mostly
+nasalisation and e/ai), reported as such rather than forced into a bucket.
+
+**Human rubric.** The run writes a sheet of 20 test cases (seed 3235), one
+accepted rewrite each with registers rotated, with empty columns for two
+raters × three axes and no judge scores. Two team members fill it in
+independently, then `python -m eval.human eval/human/<run>_rubric.csv`
+writes `eval/results/<run>_human.json`: per-axis means, rater agreement
+(exact, ±1, Pearson), and judge-vs-human Pearson and leniency (judge mean −
+human mean). Pearson is undefined when the judge gives every item the same
+score; that is reported as `null`, and is itself the leniency finding.
