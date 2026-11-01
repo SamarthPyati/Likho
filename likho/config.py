@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     hf_token: SecretStr | None = None  # HF_TOKEN; IndicTrans2 is gated
     log_level: str = "INFO"
     llm_tiebreak: bool = True  # LLM_TIEBREAK=0 disables the tagger's Param-1 call (ablation 3)
+    llm_router: bool = True  # LLM_ROUTER=0 routes by rules alone, saving one Param-1 call
     llm_model_id: str = "bharatgenai/Param-1-2.9B-Instruct"
     llm_seed: int = 3235  # sampling seed, reset per call (reproducible eval)
     translate_model_id: str = "ai4bharat/indictrans2-indic-en-1B"

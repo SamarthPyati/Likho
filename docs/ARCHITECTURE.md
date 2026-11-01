@@ -284,11 +284,17 @@ An unverified `english` for Hinglish would skip transliteration, so the
 proposal cannot be trusted alone. On the 30 router cases the rules alone
 score 30/30. Report this as a finding about the early SFT checkpoint.
 
+`LLM_ROUTER=0` skips the Param-1 call. Routes are unchanged (the rules
+decide either way); each request saves one Param-1 call, which took 4–5.5 s
+of an 8–10 s request on an Apple M4 (M5 run). Default stays on, since the
+agentic component is part of the rubric; NFR1 numbers should be reported
+both ways.
+
 **Rewrite** (`likho/rewrite.py`). Instructions are in Hindi, with two
 few-shot pairs per register (English words kept, तुम → आप for formal). The
 reply is cleaned (preamble, fences, quotes, echoed tags) and rejected —
 `StageFailure` → `StageError`, input preserved — if empty, outside
-0.5×–1.6× the input length, or switched from Devanagari to mostly Roman.
+0.5×–1.6× the input length, or switched script (Devanagari ↔ mostly Roman).
 Sampling (temperature 0.3) is reseeded per call (`LLM_SEED`), so the same
 input gives the same rewrite and eval runs are reproducible.
 

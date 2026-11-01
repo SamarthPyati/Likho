@@ -1,5 +1,6 @@
 import pytest
 
+from likho.config import settings
 from likho.mocks import MockLLM
 from likho.router import STAGES, Intent, route, route_with_proposal, rule_intent
 from likho.schemas import Stage
@@ -103,3 +104,13 @@ def test_use_llm_false_never_calls_model():
     llm = FixedLLM('{"intent": "english"}')
     assert route("kal milte hain", llm=llm, use_llm=False).source == "rule_fallback"
     assert llm.calls == 0
+
+
+def test_llm_router_setting_off_skips_model(monkeypatch):
+    monkeypatch.setattr(settings, "llm_router", False)
+    llm = FixedLLM('{"intent": "roman_hinglish"}')
+    r = route("kal milte hain", llm=llm)
+    assert r.source == "rule_fallback"
+    assert r.stages == STAGES[Intent.ROMAN_HINGLISH]
+    assert llm.calls == 0
+    assert route("kal milte hain", llm=llm, use_llm=True).source == "llm"  # explicit wins

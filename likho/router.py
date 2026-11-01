@@ -11,6 +11,7 @@ the pipeline appends it.
 import re
 from enum import Enum
 
+from likho.config import settings
 from likho.logging import get_logger
 from likho.parsing import extract_json_object
 from likho.registry import LLMLike, get_llm
@@ -80,13 +81,13 @@ _INTENT_AT_START = re.compile(
 )
 
 
-def route(text: str, *, llm: LLMLike | None = None, use_llm: bool = True) -> Route:
+def route(text: str, *, llm: LLMLike | None = None, use_llm: bool | None = None) -> Route:
     """Pick the stages for `text`. See `route_with_proposal`."""
     return route_with_proposal(text, llm=llm, use_llm=use_llm)[0]
 
 
 def route_with_proposal(
-    text: str, *, llm: LLMLike | None = None, use_llm: bool = True
+    text: str, *, llm: LLMLike | None = None, use_llm: bool | None = None
 ) -> tuple[Route, Intent | None]:
     """The LLM proposes an intent; the rule router verifies it.
 
@@ -96,7 +97,11 @@ def route_with_proposal(
     §5a), so an unverified answer would skip transliteration for Hinglish it
     mislabels as English. Returns the route and the raw proposal (None if
     there was none or it did not parse), so eval can report LLM accuracy.
+
+    `use_llm` defaults to the LLM_ROUTER setting. With it off the route is
+    identical (the rules decide either way) and one Param-1 call is saved.
     """
+    use_llm = settings.llm_router if use_llm is None else use_llm
     rule = rule_intent(text)
     proposal = None
     if use_llm and rule is not Intent.EMPTY:  # nothing for the model to judge
