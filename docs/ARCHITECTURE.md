@@ -263,25 +263,54 @@ worth putting in the report, whichever direction it goes.
 
 ## 5a. Router and rewrite (as built, M4)
 
-**Router** (`likho/router.py`). Param-1 returns one *intent*, not a stage
-list: `roman_hinglish`, `mixed_script`, `devanagari`, `english`, `empty`.
-`STAGES[intent]` maps it to stages. The LLM's answer is used only if it
-parses, names a known intent, and is possible given the text's script (it
-cannot call Roman text `devanagari`). Otherwise `rule_intent` decides —
-script counts, then the M2 tagger for Roman-only text — and
-`Route.source = "rule_fallback"`. Translation is not routed; the pipeline
-appends it when `AssistRequest.translate` is set.
+**Router** (`likho/router.py`). Param-1 *proposes* one intent:
+`roman_hinglish`, `mixed_script`, `devanagari`, `english`, `empty`;
+`STAGES[intent]` maps it to stages. The reply is forced to start with
+`{"intent": "` (prefill) after three few-shot turns, so it can only name an
+intent. Script counts plus the M2 tagger determine exactly one intent for
+any text, and the proposal is used only when it agrees with that
+(`route_with_proposal`); otherwise `Route.source = "rule_fallback"`.
+Translation is not routed; the pipeline appends it when requested.
 
-Finding to report: on the 30 committed router cases the rule router alone
-scores 30/30, so the LLM router can at best tie it there. Its value is
-robustness on inputs the rules have not seen, which this set does not
-measure.
+Why "LLM proposes, rules verify" (measured on Param-1, Apple M4 / MPS fp16,
+2026-10-31, dev split):
 
-**Rewrite** (`likho/rewrite.py`). Prompt fixes meaning, forbids additions and
-omissions, keeps English words and names. The reply is cleaned (preamble,
-fences, quotes, echoed tags) and rejected — `StageFailure` → `StageError`,
-input preserved — if empty, outside 0.5×–1.6× the input length, or switched
-from Devanagari to mostly Roman.
+| Router prompt | Parseable | LLM proposal correct |
+|---|---|---|
+| English instructions, free reply | 0/6 (prose answers) | — |
+| + prefill | 20/20 | 0/20 (says `mixed_script` for everything) |
+| + prefill + few-shot (shipped) | 20/20 | 10/20 (calls Roman Hinglish `devanagari`) |
+
+An unverified `english` for Hinglish would skip transliteration, so the
+proposal cannot be trusted alone. On the 30 router cases the rules alone
+score 30/30. Report this as a finding about the early SFT checkpoint.
+
+**Rewrite** (`likho/rewrite.py`). Instructions are in Hindi, with two
+few-shot pairs per register (English words kept, तुम → आप for formal). The
+reply is cleaned (preamble, fences, quotes, echoed tags) and rejected —
+`StageFailure` → `StageError`, input preserved — if empty, outside
+0.5×–1.6× the input length, or switched from Devanagari to mostly Roman.
+Sampling (temperature 0.3) is reseeded per call (`LLM_SEED`), so the same
+input gives the same rewrite and eval runs are reproducible.
+
+Measured on the dev split (same setup as above):
+
+| Rewrite prompt | Passed validation |
+|---|---|
+| English instructions | 0/9 — translated to English or wrote a full email |
+| Hindi instructions | 14/18 |
+| Hindi + 2 examples per register (shipped) | 21/24 |
+
+Known weaknesses that pass validation, for the failure analysis (F10):
+English words get translated despite the rule (cup → कप, flight → उड़ान);
+meaning sometimes drifts (`कल match देखने चलें?` → `कल मैच देखने जाओ।`);
+formal output is sometimes unchanged. The judge scored nearly everything
+4/4/4, drift included — evidence for LLM-as-judge leniency that the human
+rubric (M6) should test.
+
+**Param-1 decoding.** `Param1LLM.generate` runs its own decode loop instead
+of `model.generate()`: Param-1's remote code indexes `past_key_values` as a
+legacy tuple and crashes on the `DynamicCache` that transformers 4.57 passes.
 
 **Prompt convention.** Every Param-1 prompt starts `TASK: <name>` (route,
 tag, rewrite, judge); `MockLLM` dispatches on it.

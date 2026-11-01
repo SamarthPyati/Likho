@@ -22,29 +22,44 @@ MAX_LENGTH_RATIO = 1.6
 TEMPERATURE = 0.3
 MAX_NEW_TOKENS = 512  # Param-1's context is 2048 tokens; the prompt must fit too
 
+# Instructions are in Hindi: with English instructions Param-1 translated the
+# text to English or wrote a full email (0/9 accepted on dev); in Hindi with
+# two examples per register, 21/24 dev rewrites passed validation.
 REGISTER_GUIDE = {
-    Register.CASUAL: "casual and friendly, as you would text a friend",
-    Register.NEUTRAL: "clear and neutral, as in an everyday message",
-    Register.FORMAL: "formal and polite, as you would write to a teacher or a senior",
+    Register.CASUAL: "अनौपचारिक और दोस्ताना, जैसे किसी दोस्त को मैसेज",
+    Register.NEUTRAL: "साफ़ और सामान्य, जैसे रोज़ का मैसेज",
+    Register.FORMAL: "औपचारिक और विनम्र, जैसे किसी शिक्षक या वरिष्ठ को",
 }
 
 REWRITE_PROMPT = """TASK: rewrite
-Rewrite the text below so that its tone is {guide}.
-
-Rules:
-- Keep exactly the same meaning. Do not add any new information.
-- Do not drop any part of the text.
-- Keep the same script and language mix. Keep English words and names as they are.
-- Reply with only the rewritten text: no explanation, no quotes, no heading.
+नीचे दिए गए वाक्य को दोबारा लिखिए ताकि उसका लहजा {guide} हो।
+नियम: अर्थ बिल्कुल वही रहे। कोई नई जानकारी न जोड़ें, कुछ भी न हटाएँ। हिंदी को देवनागरी में ही रखें; \
+अंग्रेज़ी शब्द और नाम जैसे हैं वैसे रखें। अनुवाद न करें। केवल दोबारा लिखा गया वाक्य लौटाइए, और कुछ नहीं।
 
 <text>{text}</text>"""
+
+# Few-shot pairs per register. None of these sentences is in an eval set.
+EXAMPLES: dict[Register, list[tuple[str, str]]] = {
+    Register.CASUAL: [
+        ("कृपया मुझे कल तक report भेज दीजिए", "यार, कल तक report भेज देना"),
+        ("क्या आप आज शाम को free हैं?", "आज शाम free है क्या?"),
+    ],
+    Register.NEUTRAL: [
+        ("यार कल party में आ रहा है ना", "क्या तुम कल party में आ रहे हो?"),
+        ("भाई जल्दी से notes भेज दे", "जल्दी से notes भेज दो।"),
+    ],
+    Register.FORMAL: [
+        ("यार कल तक report भेज देना", "कृपया कल तक report भेज दीजिए।"),
+        ("तुम कब free हो, बात करनी है", "आप कब free हैं? मुझे आपसे बात करनी है।"),
+    ],
+}
 
 # Openers Param-1 tends to add despite the instruction.
 _PREAMBLE = re.compile(
     r"^\s*(?:here(?:'s| is)[^:\n]*:|rewritten(?: text)?\s*:|output\s*:|पुनर्लिखित[^:\n]*:)\s*",
     re.IGNORECASE,
 )
-_DEVANAGARI = re.compile(r"[ऀ-ॿ]")
+_DEVANAGARI = re.compile(r"[\u0900-\u097f]")
 _LATIN = re.compile(r"[A-Za-z]")
 
 
@@ -52,10 +67,17 @@ def rewrite(text: str, register: Register, *, llm: LLMLike | None = None) -> str
     """Return `text` rewritten in `register`. Raises StageFailure on a rejected rewrite."""
     if not text.strip():
         return text
-    prompt = REWRITE_PROMPT.format(guide=REGISTER_GUIDE[register], text=text)
+    guide = REGISTER_GUIDE[register]
+    examples = [
+        (REWRITE_PROMPT.format(guide=guide, text=before), after)
+        for before, after in EXAMPLES[register]
+    ]
     try:
         reply = (llm or get_llm()).generate(
-            prompt, max_new_tokens=MAX_NEW_TOKENS, temperature=TEMPERATURE
+            REWRITE_PROMPT.format(guide=guide, text=text),
+            max_new_tokens=MAX_NEW_TOKENS,
+            temperature=TEMPERATURE,
+            examples=examples,
         )
     except Exception as exc:  # noqa: BLE001 — any model failure is a stage failure
         raise StageFailure(Stage.REWRITE, f"model error: {type(exc).__name__}") from exc

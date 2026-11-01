@@ -37,7 +37,7 @@ from likho.logging import get_logger
 from likho.registry import get_xlit_engine
 from likho.rerank import DEFAULT_WEIGHTS, OFF, RerankWeights, rerank_tokens
 from likho.rewrite import rewrite
-from likho.router import STAGES, Intent, route
+from likho.router import STAGES, Intent, route_with_proposal
 from likho.schemas import Register, Token, TokenKind
 from likho.tokenize import SIGNAL_BY_CONFIDENCE, split, tag
 from likho.transliterate import transliterate_tokens
@@ -267,14 +267,16 @@ def print_rerank(result: dict) -> None:
 
 
 def eval_route(use_llm: bool) -> dict:
-    """Exact-match accuracy of the stage list, and how often the rule fallback fired."""
+    """Exact-match accuracy of the final stage list, the LLM's own proposal
+    accuracy (before the rules verify it), and the rule-fallback rate."""
     rows = []
     for case in load_router_cases():
-        r = route(case.input, use_llm=use_llm)
+        r, proposal = route_with_proposal(case.input, use_llm=use_llm)
         rows.append(
             {
                 "case": case.id,
                 "expected_intent": case.expected_intent,
+                "llm_proposal": proposal.value if proposal else None,
                 "stages": [s.value for s in r.stages],
                 "correct": r.stages == STAGES[Intent(case.expected_intent)],
                 "source": r.source,
@@ -285,8 +287,17 @@ def eval_route(use_llm: bool) -> dict:
         "n": n,
         "use_llm": use_llm,
         "accuracy": sum(r["correct"] for r in rows) / n,
+        "llm_proposal_accuracy": (
+            sum(r["llm_proposal"] == r["expected_intent"] for r in rows) / n if use_llm else None
+        ),
+        "llm_unparsed_rate": (
+            sum(r["llm_proposal"] is None for r in rows) / n if use_llm else None
+        ),
         "fallback_rate": sum(r["source"] == "rule_fallback" for r in rows) / n,
         "errors": [r for r in rows if not r["correct"]],
+        "llm_disagreements": [
+            r for r in rows if use_llm and r["llm_proposal"] != r["expected_intent"]
+        ],
     }
 
 
@@ -324,8 +335,17 @@ def print_route(result: dict) -> None:
     lines = [
         f"router  n={result['n']}  llm={result['use_llm']}  accuracy={result['accuracy']:.0%}  "
         f"fallback_rate={result['fallback_rate']:.0%}",
-        f"errors ({len(result['errors'])}):",
     ]
+    if result["use_llm"]:
+        lines.append(
+            f"llm proposal accuracy={result['llm_proposal_accuracy']:.0%}  "
+            f"unparsed={result['llm_unparsed_rate']:.0%}"
+        )
+        lines += [
+            f"  {d['case']}  expected={d['expected_intent']:<15} llm={d['llm_proposal']}"
+            for d in result["llm_disagreements"]
+        ]
+    lines.append(f"errors ({len(result['errors'])}):")
     lines += [
         f"  {e['case']}  expected={e['expected_intent']:<15} got={e['stages']} via {e['source']}"
         for e in result["errors"]

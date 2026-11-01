@@ -17,7 +17,7 @@ def test_xlit_unknown_word_is_deterministic_devanagari():
     first = engine.translit_word("pyaar", topk=5)
     assert first == engine.translit_word("pyaar", topk=5)
     assert first["hi"][0] == naive_transliterate("pyaar")
-    assert all("ऀ" <= ch <= "ॿ" for ch in first["hi"][0])
+    assert all("\u0900" <= ch <= "\u097f" for ch in first["hi"][0])
 
 
 def test_xlit_sentence():

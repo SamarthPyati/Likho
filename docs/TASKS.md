@@ -81,7 +81,7 @@ a finding either way — do not tune until it does.
 
 - [x] `likho/registry.py` — `get_llm()` singleton for Param-1
       (`Param1LLM`; CUDA → MPS → CPU, fp16 where bf16 is unsupported)
-- [ ] …loader verified against the real checkpoint (needs the ~6 GB download)
+- [x] …loader verified against the real checkpoint (Apple M4 / MPS fp16; Colab T4 still to check)
 - [x] `likho/router.py` — LLM intent classification, strict-JSON prompt,
       regex extraction, rule-based fallback, `Route.source` records which fired
 - [x] `likho/rewrite.py` — register-controlled rewrite

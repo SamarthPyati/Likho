@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     llm_tiebreak: bool = True  # LLM_TIEBREAK=0 disables the tagger's Param-1 call (ablation 3)
     llm_model_id: str = "bharatgenai/Param-1-2.9B-Instruct"
+    llm_seed: int = 3235  # sampling seed, reset per call (reproducible eval)
     language: str = "hi"  # Hindi only ships (PRD §6); kept as config, not a constant
 
 

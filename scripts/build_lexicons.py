@@ -14,7 +14,7 @@ from wordfreq import top_n_list, zipf_frequency
 OUT = Path(__file__).resolve().parent.parent / "likho" / "data"
 EN_TOP_N = 50_000
 LATIN_WORD = re.compile(r"[a-z]+")
-DEVANAGARI_WORD = re.compile(r"[ऀ-ॿ‌‍]+")
+DEVANAGARI_WORD = re.compile(r"[\u0900-\u097f\u200c\u200d]+")
 
 
 def write(path: Path, rows: list[tuple[str, float]]) -> None:

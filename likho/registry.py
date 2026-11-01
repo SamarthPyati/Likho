@@ -4,6 +4,7 @@ With MOCK_MODELS=1 every getter returns the deterministic stub from
 `likho.mocks`, and no model library is imported.
 """
 
+from collections.abc import Sequence
 from functools import lru_cache
 from typing import Protocol
 
@@ -24,8 +25,18 @@ class XlitEngineLike(Protocol):
 
 class LLMLike(Protocol):
     def generate(
-        self, prompt: str, *, max_new_tokens: int = ..., temperature: float = ...
-    ) -> str: ...
+        self,
+        prompt: str,
+        *,
+        max_new_tokens: int = ...,
+        temperature: float = ...,
+        examples: Sequence[tuple[str, str]] = ...,
+        prefix: str = ...,
+    ) -> str:
+        """Reply to `prompt`. `examples` are earlier (user, assistant) turns for
+        few-shot prompting; `prefix` is forced as the start of the reply, and
+        only the text generated after it is returned."""
+        ...
 
 
 @lru_cache(maxsize=2)  # one per rescore setting, for the rescore ablation
@@ -76,7 +87,15 @@ class Param1LLM:
         eos = self.model.generation_config.eos_token_id
         self.eos_ids = set(eos if isinstance(eos, list) else [eos])
 
-    def generate(self, prompt: str, *, max_new_tokens: int = 256, temperature: float = 0.0) -> str:
+    def generate(
+        self,
+        prompt: str,
+        *,
+        max_new_tokens: int = 256,
+        temperature: float = 0.0,
+        examples: Sequence[tuple[str, str]] = (),
+        prefix: str = "",
+    ) -> str:
         """Greedy (temperature 0) or sampled decoding with a hand-rolled loop.
 
         Param-1's remote modeling code predates transformers' Cache objects: it
@@ -85,21 +104,33 @@ class Param1LLM:
         directly with the tuple cache it returns sidesteps that.
         """
         torch = self._torch
-        messages = [{"role": "user", "content": prompt}]
+        messages = []
+        for user, assistant in examples:
+            messages += [
+                {"role": "user", "content": user},
+                {"role": "assistant", "content": assistant},
+            ]
+        messages.append({"role": "user", "content": prompt})
         if getattr(self.tokenizer, "chat_template", None):
-            input_ids = self.tokenizer.apply_chat_template(
-                messages, add_generation_prompt=True, return_tensors="pt"
+            text = self.tokenizer.apply_chat_template(
+                messages, add_generation_prompt=True, tokenize=False
             )
         else:
-            input_ids = self.tokenizer(prompt, return_tensors="pt").input_ids
+            text = "\n\n".join(m["content"] for m in messages) + "\n\n"
+        input_ids = self.tokenizer(
+            text + prefix, return_tensors="pt", add_special_tokens=False
+        ).input_ids
         next_input, past, generated = input_ids.to(self.device), None, []
+        # Reseeded per call: the same prompt always samples the same reply, so
+        # eval runs at temperature > 0 are reproducible on the same hardware.
+        rng = torch.Generator().manual_seed(settings.llm_seed)
         with torch.no_grad():
             for _ in range(max_new_tokens):
                 out = self.model(input_ids=next_input, past_key_values=past, use_cache=True)
                 logits, past = out.logits[0, -1].float(), out.past_key_values
                 if temperature > 0:
-                    probs = torch.softmax(logits / temperature, dim=-1)
-                    token = int(torch.multinomial(probs, num_samples=1))
+                    probs = torch.softmax(logits / temperature, dim=-1).cpu()
+                    token = int(torch.multinomial(probs, num_samples=1, generator=rng))
                 else:
                     token = int(torch.argmax(logits))
                 if token in self.eos_ids:

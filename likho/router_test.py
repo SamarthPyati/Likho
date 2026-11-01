@@ -1,7 +1,7 @@
 import pytest
 
 from likho.mocks import MockLLM
-from likho.router import STAGES, Intent, route, rule_intent
+from likho.router import STAGES, Intent, route, route_with_proposal, rule_intent
 from likho.schemas import Stage
 
 
@@ -63,6 +63,25 @@ def test_malformed_llm_reply_falls_back(reply):
     r = route("kal milte hain", llm=FixedLLM(reply))
     assert r.source == "rule_fallback"
     assert r.stages == STAGES[Intent.ROMAN_HINGLISH]
+
+
+def test_prefilled_reply_is_parsed():
+    # With the prefix forced, the model's reply starts at the intent name.
+    llm = FixedLLM('english", "reason": "all English"}')
+    assert route("please call me", llm=llm).source == "llm"
+
+
+def test_llm_calling_hinglish_english_is_overruled():
+    # Script alone allows "english" here; the tagger finds Hindi words, so the
+    # proposal disagrees with the rules and transliteration is kept.
+    r = route("kal milte hain", llm=FixedLLM('{"intent": "english"}'))
+    assert r.source == "rule_fallback"
+    assert Stage.TRANSLITERATE in r.stages
+
+
+def test_proposal_is_reported_even_when_overruled():
+    _, proposal = route_with_proposal("kal milte hain", llm=FixedLLM('{"intent": "english"}'))
+    assert proposal is Intent.ENGLISH
 
 
 def test_llm_answer_contradicting_script_falls_back():

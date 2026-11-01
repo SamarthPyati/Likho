@@ -11,6 +11,7 @@ between `<text>` and `</text>`.
 
 import json
 import re
+from collections.abc import Sequence
 
 # Roman → ranked Devanagari candidates. Extend as test fixtures grow (target ~200).
 ROMAN_TO_DEVANAGARI: dict[str, list[str]] = {
@@ -189,7 +190,19 @@ _JUDGE_RESPONSE = {"meaning": 4, "register": 4, "fluency": 4}
 class MockLLM:
     """Stands in for Param-1. Fixed JSON for route/judge, identity rewrite."""
 
-    def generate(self, prompt: str, *, max_new_tokens: int = 256, temperature: float = 0.0) -> str:
+    def generate(
+        self,
+        prompt: str,
+        *,
+        max_new_tokens: int = 256,
+        temperature: float = 0.0,
+        examples: Sequence[tuple[str, str]] = (),
+        prefix: str = "",
+    ) -> str:
+        reply = self._reply(prompt)
+        return reply[len(prefix) :] if prefix and reply.startswith(prefix) else reply
+
+    def _reply(self, prompt: str) -> str:
         task_match = _TASK_RE.search(prompt)
         task = task_match.group(1) if task_match else ""
         if task == "route":

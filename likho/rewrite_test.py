@@ -2,7 +2,7 @@ import pytest
 
 from likho.errors import StageFailure
 from likho.mocks import MockLLM
-from likho.rewrite import clean_reply, rewrite, validate
+from likho.rewrite import REGISTER_GUIDE, clean_reply, rewrite, validate
 from likho.schemas import Register, Stage
 
 TEXT = "कल के meeting के लिए Rohit को बता देना"
@@ -25,7 +25,7 @@ def test_mock_rewrite_is_identity_and_valid():
 def test_prompt_carries_register_and_text():
     llm = FixedLLM(TEXT)
     rewrite(TEXT, Register.FORMAL, llm=llm)
-    assert "formal and polite" in llm.prompts[0]
+    assert REGISTER_GUIDE[Register.FORMAL] in llm.prompts[0]
     assert f"<text>{TEXT}</text>" in llm.prompts[0]
 
 
