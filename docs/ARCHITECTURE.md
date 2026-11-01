@@ -64,10 +64,9 @@ likho/
 │   ├── pipeline.py             # orchestration, FR7 error handling
 │   └── mocks.py                # deterministic stubs for every stage
 ├── api/
-│   ├── main.py                 # FastAPI, /assist /health /route
-│   └── deps.py
+│   └── main.py                 # FastAPI, /assist /health /route
 ├── app/
-│   └── gradio_app.py           # thin client over the API
+│   └── gradio_app.py           # thin client over the API; never imports likho/
 ├── eval/
 │   ├── data/
 │   │   ├── aksharantar_sample.tsv    # 50 word pairs, sampled + committed

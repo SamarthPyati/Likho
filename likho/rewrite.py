@@ -4,8 +4,8 @@ Param-1 is constrained hard in the prompt and then checked, because it is an
 early SFT checkpoint (docs/MODELS.md §3.4). A rewrite is rejected — raising
 `StageFailure`, so the pipeline keeps the input — when it is empty, outside
 0.5×–1.6× the input length, or has switched script (Devanagari in, mostly
-Roman out). Rejection is about format, not quality; quality is the judge's
-job in eval/judge.py.
+Roman out, or the reverse). Rejection is about format, not quality; quality
+is the judge's job in eval/judge.py.
 """
 
 import re
@@ -109,8 +109,9 @@ def validate(original: str, rewritten: str) -> str | None:
     ratio = len(rewritten) / len(original)
     if not MIN_LENGTH_RATIO <= ratio <= MAX_LENGTH_RATIO:
         return f"length ratio {ratio:.2f} outside {MIN_LENGTH_RATIO}–{MAX_LENGTH_RATIO}"
-    if _mostly_devanagari(original) and not _mostly_devanagari(rewritten):
-        return "script changed from Devanagari"
+    if _mostly_devanagari(original) != _mostly_devanagari(rewritten):
+        before = "Devanagari" if _mostly_devanagari(original) else "Roman"
+        return f"script changed from {before}"
     return None
 
 

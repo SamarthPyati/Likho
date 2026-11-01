@@ -4,3 +4,5 @@
 ai4bharat-transliteration==1.1.3  # pulls fairseq 0.12.2 (built from source on py3.10)
 transformers==4.57.3  # the version Param-1's custom modeling code was saved with
 accelerate
+IndicTransToolkit==1.1.1  # IndicProcessor: IndicTrans2 pre/post-processing (docs/MODELS.md §4)
+sentencepiece  # IndicTrans2's tokenizer

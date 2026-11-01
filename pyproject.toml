@@ -16,5 +16,5 @@ target-version = "py310"
 select = ["E", "F", "I", "B", "UP"]
 
 [tool.pytest.ini_options]
-testpaths = ["likho", "eval", "tests"]
+testpaths = ["likho", "api", "app", "eval", "tests"]
 python_files = ["*_test.py", "test_*.py"]

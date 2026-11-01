@@ -1,6 +1,8 @@
 """Enforce one-way dependencies (docs/ARCHITECTURE.md §2).
 
 likho/ must not import api/, app/, eval/ or UI/web frameworks.
+api/ must not import app/ or the UI framework.
+app/ talks to the API over HTTP only: no likho/, no model libraries (CLAUDE.md rule 1).
 eval/ must not import api/ or app/ (CLAUDE.md rule 4).
 """
 
@@ -11,6 +13,8 @@ ROOT = Path(__file__).resolve().parent.parent
 
 FORBIDDEN = {
     "likho": {"api", "app", "eval", "gradio", "fastapi", "uvicorn"},
+    "api": {"app", "gradio"},
+    "app": {"likho", "eval", "torch", "transformers", "ai4bharat", "IndicTransToolkit"},
     "eval": {"api", "app", "gradio"},
 }
 

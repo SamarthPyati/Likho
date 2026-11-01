@@ -83,3 +83,11 @@ def test_validate_bounds_are_inclusive():
 
 def test_clean_reply_keeps_inner_quotes():
     assert clean_reply('उसने कहा "हाँ"') == 'उसने कहा "हाँ"'
+
+
+def test_english_rewritten_into_hindi_is_rejected():
+    # The prompt is in Hindi; for all-English input Param-1 may answer in Hindi.
+    english = "please send me the report by tomorrow"
+    with pytest.raises(StageFailure) as info:
+        rewrite(english, Register.FORMAL, llm=FixedLLM("कृपया कल तक मुझे report भेज दीजिए"))
+    assert "script changed from Roman" in info.value.error.message

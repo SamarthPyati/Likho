@@ -97,14 +97,17 @@ response is covered by a test and does not crash the pipeline.
 
 ## M5 — Pipeline, API, frontend
 
-- [ ] `likho/pipeline.py` — orchestrates stages per `Route`, fills `timings_ms`
-- [ ] FR7: a failed stage populates `errors` and preserves earlier output
-- [ ] `api/main.py` — `POST /assist`, `GET /health`, `POST /route`
-- [ ] Startup hook warms all three models
-- [ ] `app/gradio_app.py` — input box, register selector, translate toggle,
+- [x] `likho/pipeline.py` — orchestrates stages per `Route`, fills `timings_ms`
+- [x] FR7: a failed stage populates `errors` and preserves earlier output
+- [x] `api/main.py` — `POST /assist`, `GET /health`, `POST /route`
+- [x] Startup hook warms all three models
+- [x] `app/gradio_app.py` — input box, register selector, translate toggle,
       loanword toggle, three output panes
-- [ ] Per-word alternatives UI (U2) — clicking a word offers its candidates
-- [ ] Route explanation shown (U6)
+- [x] Per-word alternatives UI (U2) — clicking a word offers its candidates
+- [x] Route explanation shown (U6)
+- [x] `DISABLE_STAGES=rewrite` switches a stage off; it is reported as an error
+- [x] Verified on real IndicXlit + Param-1 (Apple M4): example sentence, all registers
+- [ ] Verified on real IndicTrans2 — blocked until the HF terms are accepted
 
 **Accept when:** `make api && make dev`, paste
 `"kal ke meeting ke liye Rohit ko bata dena"`, get Devanagari with `meeting`

@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     llm_tiebreak: bool = True  # LLM_TIEBREAK=0 disables the tagger's Param-1 call (ablation 3)
     llm_model_id: str = "bharatgenai/Param-1-2.9B-Instruct"
     llm_seed: int = 3235  # sampling seed, reset per call (reproducible eval)
+    translate_model_id: str = "ai4bharat/indictrans2-indic-en-1B"
+    # Comma-separated stages to switch off, e.g. DISABLE_STAGES=rewrite. A disabled
+    # stage is reported as a StageError, exactly like a failed one (FR7 testing).
+    disable_stages: str = ""
     language: str = "hi"  # Hindi only ships (PRD §6); kept as config, not a constant
 
 

@@ -189,7 +189,16 @@ translations = ip.postprocess_batch(decoded, lang="eng_Latn")
 - Language codes are FLORES-style: `hin_Deva`, `eng_Latn`. Not `hi`/`en`.
 - `IndicTransToolkit` is a separate install from the IndicTrans2 repo. Older
   docs name it `IndicTransTokenizer` — same `IndicProcessor` class, different
-  package name. Pin whichever you install.
+  package name. Pin whichever you install. We pin `IndicTransToolkit==1.1.1`
+  (prebuilt wheels for py3.10 on macOS arm64 and Linux x86_64) plus
+  `sentencepiece`, in `requirements-models.in`.
+- **Gated.** Accept the terms on the model page *and* set `HF_TOKEN`; a
+  token without accepted terms gets HTTP 403, which `from_pretrained`
+  raises as `OSError`. The API still starts: `/health` reports
+  `degraded` and each translate request returns a `translate` StageError.
+- Not yet run in this repo with transformers 4.57.3: the model's remote code
+  predates it, so check `generate()` first (Param-1's remote code broke
+  there, §3.4).
 - Skip `attn_implementation="flash_attention_2"` unless `flash_attn` is
   actually installed; it will not fall back gracefully.
 - Batch sentences rather than calling per sentence. The model is seq2seq and

@@ -99,7 +99,7 @@ def route_with_proposal(
     """
     rule = rule_intent(text)
     proposal = None
-    if use_llm:
+    if use_llm and rule is not Intent.EMPTY:  # nothing for the model to judge
         proposal, problem = _llm_intent(text, llm)
         if proposal is rule:
             return Route(stages=STAGES[rule], reason=REASONS[rule], source="llm"), proposal

@@ -10,7 +10,7 @@ from typing import Protocol
 
 from likho.config import settings
 from likho.logging import get_logger
-from likho.mocks import MockLLM, MockXlitEngine
+from likho.mocks import MockLLM, MockTranslator, MockXlitEngine
 
 logger = get_logger(__name__)
 
@@ -55,26 +55,36 @@ def get_xlit_engine(rescore: bool = True) -> XlitEngineLike:
     return XlitEngine(settings.language, beam_width=XLIT_BEAM_WIDTH, rescore=rescore)
 
 
-class Param1LLM:
-    """Param-1 behind the `LLMLike` interface. See docs/MODELS.md §3.
+class TranslatorLike(Protocol):
+    def translate_batch(
+        self, texts: list[str], src_lang: str = ..., tgt_lang: str = ...
+    ) -> list[str]: ...
 
-    Device: CUDA > Apple MPS > CPU. dtype: bf16 where CUDA supports it, else
-    fp16 on a GPU (the Colab T4 has no native bf16), fp32 on CPU.
-    """
+
+def _device_and_dtype(torch):  # noqa: ANN001, ANN202 — torch is imported lazily
+    """CUDA > Apple MPS > CPU. bf16 where CUDA supports it, else fp16 on a GPU
+    (the Colab T4 has no native bf16), fp32 on CPU."""
+    if torch.cuda.is_available():
+        return "cuda", torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
+    if torch.backends.mps.is_available():
+        return "mps", torch.float16
+    return "cpu", torch.float32
+
+
+def _hf_token() -> str | None:
+    return settings.hf_token.get_secret_value() if settings.hf_token else None
+
+
+class Param1LLM:
+    """Param-1 behind the `LLMLike` interface. See docs/MODELS.md §3."""
 
     def __init__(self, model_id: str) -> None:
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
 
-        if torch.cuda.is_available():
-            device = "cuda"
-            dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
-        elif torch.backends.mps.is_available():
-            device, dtype = "mps", torch.float16
-        else:
-            device, dtype = "cpu", torch.float32
+        device, dtype = _device_and_dtype(torch)
         logger.info("loading %s on %s (%s)", model_id, device, dtype)
-        token = settings.hf_token.get_secret_value() if settings.hf_token else None
+        token = _hf_token()
         self._torch = torch
         self.tokenizer = AutoTokenizer.from_pretrained(
             model_id, trust_remote_code=True, token=token
@@ -146,3 +156,83 @@ def get_llm() -> LLMLike:
     if settings.mock_models:
         return MockLLM()
     return Param1LLM(settings.llm_model_id)
+
+
+class IndicTrans2Translator:
+    """IndicTrans2 behind the `TranslatorLike` interface. See docs/MODELS.md §4.
+
+    `IndicProcessor.preprocess_batch` before tokenizing and `postprocess_batch`
+    after decoding are both mandatory: skipping either gives fluent-looking
+    garbage, not an error.
+    """
+
+    MAX_LENGTH = 256
+    NUM_BEAMS = 5
+
+    def __init__(self, model_id: str) -> None:
+        import torch
+        from IndicTransToolkit import IndicProcessor
+        from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+
+        device, dtype = _device_and_dtype(torch)
+        logger.info("loading %s on %s (%s)", model_id, device, dtype)
+        token = _hf_token()
+        self._torch = torch
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            model_id, trust_remote_code=True, token=token
+        )
+        self.model = AutoModelForSeq2SeqLM.from_pretrained(
+            model_id, trust_remote_code=True, dtype=dtype, token=token
+        ).to(device)
+        self.model.eval()
+        self.device = device
+        self.processor = IndicProcessor(inference=True)
+
+    def translate_batch(
+        self, texts: list[str], src_lang: str = "hin_Deva", tgt_lang: str = "eng_Latn"
+    ) -> list[str]:
+        batch = self.processor.preprocess_batch(texts, src_lang=src_lang, tgt_lang=tgt_lang)
+        inputs = self.tokenizer(batch, padding="longest", truncation=True, return_tensors="pt").to(
+            self.device
+        )
+        with self._torch.no_grad():
+            generated = self.model.generate(
+                **inputs,
+                use_cache=True,
+                min_length=0,
+                max_length=self.MAX_LENGTH,
+                num_beams=self.NUM_BEAMS,
+                num_return_sequences=1,
+            )
+        decoded = self.tokenizer.batch_decode(
+            generated.detach().cpu().tolist(),
+            skip_special_tokens=True,
+            clean_up_tokenization_spaces=True,
+        )
+        return self.processor.postprocess_batch(decoded, lang=tgt_lang)
+
+
+@lru_cache(maxsize=1)
+def get_translator() -> TranslatorLike:
+    """IndicTrans2 Indic → English. Gated on Hugging Face: needs HF_TOKEN."""
+    if settings.mock_models:
+        return MockTranslator()
+    return IndicTrans2Translator(settings.translate_model_id)
+
+
+def warm_models() -> dict[str, bool]:
+    """Load every model now (NFR3), so no user request pays the load cost.
+
+    A model that fails to load is logged and reported, not raised: its stage
+    then fails per request with a StageError and the other stages still run.
+    """
+    status = {}
+    getters = {"xlit": get_xlit_engine, "llm": get_llm, "translate": get_translator}
+    for name, getter in getters.items():
+        try:
+            getter()
+            status[name] = True
+        except Exception as exc:  # noqa: BLE001 — degrade, don't refuse to start
+            logger.error("could not load %s: %s", name, type(exc).__name__)
+            status[name] = False
+    return status
