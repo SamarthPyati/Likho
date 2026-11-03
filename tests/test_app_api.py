@@ -46,3 +46,38 @@ def test_api_down_is_a_readable_error(monkeypatch):
     monkeypatch.setattr(ui.httpx, "post", refuse)
     with pytest.raises(ui.gr.Error, match="make api"):
         ui.submit("kal", "neutral", False, False)
+
+
+@pytest.mark.parametrize("demo", ui.DEMOS, ids=lambda d: d.label)
+def test_every_demo_runs_cleanly(api, demo):
+    index, header, entries, native, rewritten, english, route_md, errors_md = ui.run_demo(demo)
+    assert ui.DEMOS[index] is demo
+    assert demo.text in header and demo.shows in header
+    assert errors_md == ""
+    assert "".join(e for e, _ in entries)  # every demo produces tagged words
+    assert rewritten
+    assert bool(english) == demo.translate
+
+
+def test_demos_show_what_they_claim(api):
+    by_label = {d.label.split(" ", 1)[1]: ui.run_demo(d) for d in ui.DEMOS}
+    assert "Rohit" in by_label["Names and English words kept"][3]
+    assert "meeting" in by_label["Names and English words kept"][3]
+    assert "meeting" not in by_label["English words in Devanagari"][3]
+    assert "transliterate" not in by_label["Plain English"][6]
+
+
+def test_compare_tones_returns_one_rewrite_per_register(api):
+    assert len(ui.compare_tones("bhai kal tak report bhej dena")) == len(ui.REGISTERS)
+    with pytest.raises(ui.gr.Error):
+        ui.compare_tones("  ")
+
+
+def test_open_in_editor_copies_demo_settings():
+    text, register, translate, loanwords, _ = ui.open_in_editor(ui.DEMOS.index(ui.DEMOS[2]))
+    assert (text, loanwords) == (ui.DEMOS[2].text, True)
+    assert register == "neutral" and translate is False
+
+
+def test_ui_builds():
+    assert ui.build() is not None

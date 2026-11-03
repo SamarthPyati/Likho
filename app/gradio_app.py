@@ -8,6 +8,7 @@ back to the API.
 """
 
 import os
+from dataclasses import dataclass
 from typing import Any
 
 import gradio as gr
@@ -33,6 +34,67 @@ KIND_LABEL = {  # TokenKind value → legend label; None = not clickable
 COLORS = {"Hindi": "#f59e0b", "English": "#3b82f6", "Name": "#10b981", "Devanagari": "#a855f7"}
 
 Response = dict[str, Any]  # AssistResponse as JSON
+REGISTERS = ["casual", "neutral", "formal"]
+
+
+@dataclass(frozen=True)
+class Demo:
+    """One showcase button on the Demo tab: a request plus what it is meant to show."""
+
+    label: str
+    text: str
+    shows: str
+    register: str = "neutral"
+    translate: bool = False
+    loanwords: bool = False
+
+
+DEMOS = [
+    Demo(
+        "🔤 Roman → Devanagari",
+        "yaar aaj office nahi aa paunga, tabiyat thik nahi hai",
+        "Hindi words typed in Roman letters are written in Devanagari. "
+        "*office* is an English word, so it stays as typed.",
+    ),
+    Demo(
+        "👤 Names and English words kept",
+        "kal ke meeting ke liye Rohit ko bata dena",
+        "The tagger keeps the name *Rohit* and the English word *meeting* in Roman; "
+        "only the Hindi words are converted.",
+    ),
+    Demo(
+        "🅰️ English words in Devanagari",
+        "kal ke meeting ke liye Rohit ko bata dena",
+        "Same sentence with the loanword switch on: English words are written "
+        "in Devanagari too (मीटिंग). Names are still kept.",
+        loanwords=True,
+    ),
+    Demo(
+        "🎩 Formal rewrite",
+        "bhai kal tak report bhej dena please",
+        "Param-1 rewrites the Devanagari in a formal register. A rule check rejects "
+        "rewrites that change the script or drop content, keeping the original instead.",
+        register="formal",
+    ),
+    Demo(
+        "🌐 Translate to English",
+        "mujhe kal tak report bhejni hai",
+        "After the rewrite, IndicTrans2 translates the Devanagari to English.",
+        translate=True,
+    ),
+    Demo(
+        "🔀 Mixed script",
+        "मुझे kal तक report भेजनी है",
+        "Input that is already partly Devanagari. The router sees the mix and "
+        "converts only the Roman Hindi words.",
+    ),
+    Demo(
+        "🇬🇧 Plain English",
+        "please call me when you reach",
+        "The router sees English and skips transliteration: there is nothing to convert. "
+        "Compare the stage list with the other examples.",
+    ),
+]
 
 
 def call_api(path: str, payload: dict) -> Response:
@@ -159,6 +221,98 @@ def update_rewrite(resp: Response, register: str, translate: bool):  # noqa: ANN
     return again["rewritten"] or "", again["english"] or "", errors_markdown(again)
 
 
+def run_demo(demo: Demo):  # noqa: ANN201
+    """Run one showcase through the API and describe what it shows."""
+    resp = call_api(
+        "/assist",
+        {
+            "text": demo.text,
+            "register": demo.register,
+            "translate": demo.translate,
+            "transliterate_loanwords": demo.loanwords,
+        },
+    )
+    switches = [f"tone **{demo.register}**"]
+    if demo.translate:
+        switches.append("translate **on**")
+    if demo.loanwords:
+        switches.append("English words in Devanagari **on**")
+    header = f"### {demo.label}\n\n> {demo.text}\n\n{', '.join(switches)}\n\n{demo.shows}"
+    entries, _ = highlights(demo.text, resp["tokens"])
+    return (
+        DEMOS.index(demo),
+        header,
+        entries,
+        resp["native_script"] or "",
+        resp["rewritten"] or "",
+        resp["english"] or "",
+        route_markdown(resp),
+        errors_markdown(resp),
+    )
+
+
+def compare_tones(text: str):  # noqa: ANN201
+    """The same text rewritten in every register, one API call each."""
+    if not text.strip():
+        raise gr.Error("Type something to compare, or run a demo first.")
+    rewrites = []
+    for register in REGISTERS:
+        resp = call_api("/assist", {"text": text, "register": register})
+        rewrites.append(resp["rewritten"] or resp["native_script"] or "")
+    return tuple(rewrites)
+
+
+def open_in_editor(index: int | None):  # noqa: ANN201
+    """Copy the last demo's settings to the Write tab and switch to it."""
+    if index is None:
+        return gr.update(), gr.update(), gr.update(), gr.update(), gr.update()
+    demo = DEMOS[index]
+    return demo.text, demo.register, demo.translate, demo.loanwords, gr.Tabs(selected="write")
+
+
+def _demo_runner(demo: Demo):  # noqa: ANN202
+    def run():  # noqa: ANN202
+        return run_demo(demo)
+
+    return run
+
+
+def build_demo_tab(text, register, translate, loanwords, tabs) -> None:  # noqa: ANN001
+    gr.Markdown(
+        "Each button runs one example through the full pipeline and explains what it "
+        "shows. Use **Open in editor** to change it and try your own variations."
+    )
+    demo_state = gr.State(None)
+    with gr.Row():
+        buttons = [gr.Button(d.label, size="sm") for d in DEMOS]
+    about = gr.Markdown("*Pick a demo above.*")
+    words = gr.HighlightedText(
+        label="Words by kind", color_map=COLORS, combine_adjacent=False, show_legend=True
+    )
+    with gr.Row():
+        native = gr.Textbox(label="Devanagari", lines=2, buttons=["copy"])
+        rewritten = gr.Textbox(label="Rewritten", lines=2, buttons=["copy"])
+        english = gr.Textbox(label="English", lines=2, buttons=["copy"])
+    route_md = gr.Markdown()
+    errors_md = gr.Markdown()
+    edit = gr.Button("✏️ Open in editor", size="sm")
+
+    outputs = [demo_state, about, words, native, rewritten, english, route_md, errors_md]
+    for button, demo in zip(buttons, DEMOS, strict=True):
+        button.click(_demo_runner(demo), None, outputs)
+    edit.click(open_in_editor, demo_state, [text, register, translate, loanwords, tabs])
+
+    gr.Markdown("### 🎚️ Compare tones\nThe same sentence rewritten casual, neutral and formal.")
+    with gr.Row():
+        compare_text = gr.Textbox(
+            label="Text", value="bhai kal tak report bhej dena please", scale=4
+        )
+        compare = gr.Button("Compare tones", variant="primary", scale=1)
+    with gr.Row():
+        tone_boxes = [gr.Textbox(label=r.capitalize(), lines=2) for r in REGISTERS]
+    compare.click(compare_tones, compare_text, tone_boxes)
+
+
 def build() -> gr.Blocks:
     with gr.Blocks(title="Likho") as demo:
         gr.Markdown(
@@ -166,58 +320,66 @@ def build() -> gr.Blocks:
             "Type Hinglish in Roman letters. Likho writes it in Devanagari, rewrites it "
             "in the tone you pick, and can translate it to English."
         )
-        resp_state = gr.State(None)
-        owners_state = gr.State([])
-        selected_state = gr.State(None)
-
-        text = gr.Textbox(label="Your text", lines=3, placeholder=EXAMPLES[0])
-        with gr.Row():
-            register = gr.Radio(["casual", "neutral", "formal"], value="neutral", label="Tone")
-            translate = gr.Checkbox(label="Translate to English")
-            loanwords = gr.Checkbox(label="Write English words in Devanagari too")
-        go = gr.Button("Likho", variant="primary")
-        gr.Examples(EXAMPLES, inputs=text)
-
-        route_md = gr.Markdown()
-        errors_md = gr.Markdown()
-        words = gr.HighlightedText(
-            label="Words (click a Hindi word to see alternatives)",
-            color_map=COLORS,
-            combine_adjacent=False,
-            show_legend=True,
-        )
-        alternatives = gr.Radio([], label="Alternatives", visible=False)
-        with gr.Row():
-            native = gr.Textbox(label="Devanagari", lines=3, buttons=["copy"])
-            rewritten = gr.Textbox(label="Rewritten", lines=3, buttons=["copy"])
-            english = gr.Textbox(label="English", lines=3, buttons=["copy"])
-        update = gr.Button("Update rewrite", size="sm")
-
-        outputs = [
-            resp_state,
-            owners_state,
-            selected_state,
-            native,
-            rewritten,
-            english,
-            words,
-            route_md,
-            errors_md,
-            alternatives,
-        ]
-        inputs = [text, register, translate, loanwords]
-        go.click(submit, inputs, outputs)
-        text.submit(submit, inputs, outputs)
-        words.select(pick_word, [resp_state, owners_state], [selected_state, alternatives])
-        alternatives.input(
-            choose_alternative,
-            [resp_state, selected_state, alternatives],
-            [resp_state, native, words, errors_md],
-        )
-        update.click(
-            update_rewrite, [resp_state, register, translate], [rewritten, english, errors_md]
-        )
+        with gr.Tabs() as tabs:
+            with gr.Tab("Write", id="write"):
+                text, register, translate, loanwords = build_write_tab()
+            with gr.Tab("Demo", id="demo"):
+                build_demo_tab(text, register, translate, loanwords, tabs)
     return demo
+
+
+def build_write_tab():  # noqa: ANN201
+    """The main editor. Returns its input controls so the Demo tab can fill them."""
+    resp_state = gr.State(None)
+    owners_state = gr.State([])
+    selected_state = gr.State(None)
+
+    text = gr.Textbox(label="Your text", lines=3, placeholder=EXAMPLES[0])
+    with gr.Row():
+        register = gr.Radio(REGISTERS, value="neutral", label="Tone")
+        translate = gr.Checkbox(label="Translate to English")
+        loanwords = gr.Checkbox(label="Write English words in Devanagari too")
+    go = gr.Button("Likho", variant="primary")
+    gr.Examples(EXAMPLES, inputs=text)
+
+    route_md = gr.Markdown()
+    errors_md = gr.Markdown()
+    words = gr.HighlightedText(
+        label="Words (click a Hindi word to see alternatives)",
+        color_map=COLORS,
+        combine_adjacent=False,
+        show_legend=True,
+    )
+    alternatives = gr.Radio([], label="Alternatives", visible=False)
+    with gr.Row():
+        native = gr.Textbox(label="Devanagari", lines=3, buttons=["copy"])
+        rewritten = gr.Textbox(label="Rewritten", lines=3, buttons=["copy"])
+        english = gr.Textbox(label="English", lines=3, buttons=["copy"])
+    update = gr.Button("Update rewrite", size="sm")
+
+    outputs = [
+        resp_state,
+        owners_state,
+        selected_state,
+        native,
+        rewritten,
+        english,
+        words,
+        route_md,
+        errors_md,
+        alternatives,
+    ]
+    inputs = [text, register, translate, loanwords]
+    go.click(submit, inputs, outputs)
+    text.submit(submit, inputs, outputs)
+    words.select(pick_word, [resp_state, owners_state], [selected_state, alternatives])
+    alternatives.input(
+        choose_alternative,
+        [resp_state, selected_state, alternatives],
+        [resp_state, native, words, errors_md],
+    )
+    update.click(update_rewrite, [resp_state, register, translate], [rewritten, english, errors_md])
+    return text, register, translate, loanwords
 
 
 if __name__ == "__main__":
