@@ -4,6 +4,7 @@ With MOCK_MODELS=1 every getter returns the deterministic stub from
 `likho.mocks`, and no model library is imported.
 """
 
+import gc
 from collections.abc import Sequence
 from functools import lru_cache
 from typing import Protocol
@@ -156,6 +157,23 @@ def get_llm() -> LLMLike:
     if settings.mock_models:
         return MockLLM()
     return Param1LLM(settings.llm_model_id)
+
+
+def release_llm() -> None:
+    """Drop the loaded Param-1 and free its memory. The next `get_llm()` reloads it.
+
+    For the evaluation, which needs Param-1 and IndicTrans2 in turn but never
+    together: on a 16 GB machine holding both made it swap.
+    """
+    get_llm.cache_clear()
+    gc.collect()
+    if not settings.mock_models:
+        import torch
+
+        if torch.backends.mps.is_available():
+            torch.mps.empty_cache()
+        elif torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
 
 class IndicTrans2Translator:

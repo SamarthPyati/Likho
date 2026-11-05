@@ -6,6 +6,9 @@ produced, so a failed rewrite never loses the transliteration (FR7):
 
     route → tokenize → transliterate → rerank → [render] → rewrite → translate
 
+`assist` is `assist_untranslated` followed by `add_translation`; the two halves
+are public so the evaluation can run them in separate passes.
+
 - rerank failed: the native script is rendered from IndicXlit's top-1
 - transliterate failed: no native script; rewrite and translate are skipped
 - rewrite failed: translation uses the native script instead
@@ -43,6 +46,25 @@ def disabled_stages() -> set[Stage]:
 
 
 def assist(request: AssistRequest) -> AssistResponse:
+    response = assist_untranslated(request)
+    if request.translate:
+        response = add_translation(request.text, response)
+    logger.info(
+        "assist chars=%d route=%s errors=%s total_ms=%.0f",
+        len(request.text),
+        response.route.source,
+        [e.stage.value for e in response.errors],
+        response.timings_ms["total"],
+    )
+    return response
+
+
+def assist_untranslated(request: AssistRequest) -> AssistResponse:
+    """Every routed stage except translation, whatever `request.translate` says.
+
+    Split out so the evaluation can run all Param-1 work first and translate
+    afterwards, with only one large model in memory at a time.
+    """
     timings: dict[str, float] = {}
     errors: list[StageError] = []
     disabled = disabled_stages()
@@ -55,8 +77,6 @@ def assist(request: AssistRequest) -> AssistResponse:
     routed = run(Stage.ROUTE, lambda: route(text))
     if routed is None:  # route() falls back to rules itself; this is the tagger failing
         routed = Route(stages=[Stage.ROUTE], reason="Routing failed", source="rule_fallback")
-    if request.translate and Stage.TOKENIZE in routed.stages:  # not for empty input
-        routed = routed.model_copy(update={"stages": [*routed.stages, Stage.TRANSLATE]})
     stages = routed.stages
 
     tokens: list[Token] = []
@@ -90,32 +110,48 @@ def assist(request: AssistRequest) -> AssistResponse:
         else:
             rewritten = run(Stage.REWRITE, lambda: rewrite(base, request.register))
 
-    english = None
-    if Stage.TRANSLATE in stages:
-        source = rewritten or base
-        if source is None:
-            errors.append(_skipped(Stage.TRANSLATE))
-        elif not _DEVANAGARI.search(source):
-            english = source  # already English: nothing to translate
-        else:
-            english = run(Stage.TRANSLATE, lambda: translate(source))
-
     timings["total"] = _ms(start)
-    logger.info(
-        "assist chars=%d route=%s errors=%s total_ms=%.0f",
-        len(text),
-        routed.source,
-        [e.stage.value for e in errors],
-        timings["total"],
-    )
     return AssistResponse(
         route=routed,
         tokens=tokens,
         native_script=native,
         rewritten=rewritten,
-        english=english,
+        english=None,
         errors=errors,
         timings_ms=timings,
+    )
+
+
+def add_translation(text: str, response: AssistResponse) -> AssistResponse:
+    """Run the translate stage on a response from `assist_untranslated`.
+
+    Translates the rewrite, or the native script if the rewrite failed (FR7).
+    Its time is added to the total.
+    """
+    if Stage.TOKENIZE not in response.route.stages:  # empty input: nothing to translate
+        return response
+    timings = dict(response.timings_ms)
+    errors = list(response.errors)
+    stages = response.route.stages
+    base = response.native_script if Stage.TRANSLITERATE in stages else text
+    source = response.rewritten or base
+    english = None
+    if source is None:
+        errors.append(_skipped(Stage.TRANSLATE))
+    elif not _DEVANAGARI.search(source):
+        english = source  # already English: nothing to translate
+    else:
+        english = _run(
+            Stage.TRANSLATE, lambda: translate(source), timings, errors, disabled_stages()
+        )
+    timings["total"] = round(timings["total"] + timings.get(Stage.TRANSLATE.value, 0.0), 1)
+    return response.model_copy(
+        update={
+            "route": response.route.model_copy(update={"stages": [*stages, Stage.TRANSLATE]}),
+            "english": english,
+            "errors": errors,
+            "timings_ms": timings,
+        }
     )
 
 

@@ -113,3 +113,17 @@ def test_gold_intent():
     assert full.gold_intent(CASES["cm_001"]).value == "roman_hinglish"
     assert full.gold_intent(CASES["cm_034"]).value == "english"
     assert full.gold_intent(CASES["cm_050"]).value == "mixed_script"  # मेरा नाम Rohit है
+
+
+def test_checkpoint_resume_gives_the_same_metrics(tmp_path):
+    checkpoint = tmp_path / "unit_checkpoint.tmp"
+    first, _ = run_all("unit", checkpoint)
+    assert checkpoint.exists() and "resumed_phases" not in first["meta"]
+    resumed, _ = run_all("unit", checkpoint)
+    assert resumed["meta"]["resumed_phases"] == [
+        "transliterate",
+        "tokenize",
+        "rerank_route",
+        "rewrite",
+    ]
+    assert full.compare(resumed, json.loads(json.dumps(first))) == []

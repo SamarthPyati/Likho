@@ -22,13 +22,13 @@ from sacrebleu.metrics import BLEU, CHRF
 
 from eval.cases import Case
 from eval.failures import CODES, classify_token, primary
-from eval.judge import AXES, judge
+from eval.judge import AXES, JudgeScore, judge
 from eval.metrics import corpus_cer, fold_variants, normalize
 from likho.config import settings
 from likho.errors import StageFailure
 from likho.logging import get_logger
-from likho.pipeline import assist
-from likho.registry import get_llm, get_xlit_engine
+from likho.pipeline import add_translation, assist_untranslated
+from likho.registry import get_llm, get_translator, get_xlit_engine, release_llm
 from likho.router import STAGES, Intent
 from likho.schemas import AssistRequest, AssistResponse, Register, Stage, TokenKind
 from likho.tokenize import split
@@ -55,15 +55,28 @@ def gold_intent(case: Case) -> Intent:
 
 
 def run_case(case: Case) -> tuple[AssistResponse | None, str | None]:
+    """Every stage but translation (see `end_to_end`); a crash is returned, not raised."""
     request = AssistRequest(text=case.input, register=E2E_REGISTER, translate=True)
     try:
-        return assist(request), None
+        return assist_untranslated(request), None
     except Exception as exc:  # noqa: BLE001 — a crash is an F12 result, not a harness crash
         return None, type(exc).__name__
 
 
-def evaluate_case(case: Case, response: AssistResponse | None, crash: str | None) -> dict:
-    """One CSV row: what each stage produced, whether it passed, and F-codes."""
+def judge_rewrite(case: Case, response: AssistResponse | None) -> JudgeScore | None:
+    if response is None or response.rewritten is None:
+        return None
+    return judge(response.native_script or case.input, response.rewritten, E2E_REGISTER)
+
+
+def evaluate_case(
+    case: Case,
+    response: AssistResponse | None,
+    crash: str | None,
+    score: JudgeScore | None = None,
+) -> dict:
+    """One CSV row: what each stage produced, whether it passed, and F-codes.
+    `score` is the rewrite's judge score, judged here if not given."""
     row: dict = {
         "id": case.id,
         "category": case.category,
@@ -115,8 +128,7 @@ def evaluate_case(case: Case, response: AssistResponse | None, crash: str | None
     row["rewritten"] = response.rewritten
     row["rewrite_error"] = stage_errors.get(Stage.REWRITE, "")
     if response.rewritten is not None:
-        source = response.native_script or case.input
-        score = judge(source, response.rewritten, E2E_REGISTER)
+        score = score or judge_rewrite(case, response)
         row.update({f"judge_{a}": getattr(score, a) for a in AXES})
         row["judge_parsed"] = score.parsed
         row["rewrite_ok"] = score.meaning >= MEANING_PASS
@@ -155,10 +167,35 @@ def evaluate_case(case: Case, response: AssistResponse | None, crash: str | None
 
 
 def end_to_end(cases: list[Case]) -> tuple[list[dict], list[AssistResponse]]:
-    rows, responses = [], []
+    """The full pipeline on every case, in two passes over the cases.
+
+    Pass 1 runs every stage except translation and judges the rewrite (all
+    Param-1 work). Param-1 is then released and pass 2 translates (IndicTrans2).
+    Each case's output is identical to one `assist()` call — `assist` is the
+    same two functions back to back — but only one large model is in memory at
+    a time. With both loaded on a 16 GB machine, a case took ~15 min of swap.
+    Translate latency is still measured per request.
+    """
+    get_llm()  # load before timing: latency should not include model loading
+    first = []
     for i, case in enumerate(cases, 1):
         response, crash = run_case(case)
-        rows.append(evaluate_case(case, response, crash))
+        first.append((case, response, crash, judge_rewrite(case, response)))
+        logger.info("e2e pass 1 %d/%d %s", i, len(cases), case.id)
+    release_llm()
+    try:
+        get_translator()  # load before timing, as above
+    except Exception as exc:  # noqa: BLE001 — unavailable: each case records it per request
+        logger.warning("translator failed to load: %s", type(exc).__name__)
+
+    rows, responses = [], []
+    for i, (case, response, crash, score) in enumerate(first, 1):
+        if response is not None:
+            try:
+                response = add_translation(case.input, response)
+            except Exception as exc:  # noqa: BLE001 — same rule as run_case
+                response, crash = None, type(exc).__name__
+        rows.append(evaluate_case(case, response, crash, score))
         if response is not None:
             responses.append(response)
         logger.info("e2e %d/%d %s %s", i, len(cases), case.id, rows[-1]["failure"] or "pass")

@@ -2,7 +2,7 @@ PYTHON_VERSION ?= 3.10
 VENV ?= .venv
 BIN := $(VENV)/bin
 
-.PHONY: setup setup-models dev api test eval lint format
+.PHONY: setup setup-models dev api test eval results lint format
 
 # Uses uv when available (it can fetch Python 3.10 itself); otherwise needs python3.10 on PATH.
 setup:
@@ -33,6 +33,9 @@ test:
 
 eval:
 	$(BIN)/python -m eval.run_eval
+
+results:  # make results RUN=<run-id>
+	$(BIN)/python -m eval.export_results $(RUN)
 
 lint:
 	$(BIN)/ruff check .

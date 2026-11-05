@@ -14,12 +14,14 @@ Any single stage: --out PATH also writes the result as JSON.
 
 import argparse
 import csv
+import gc
 import itertools
 import json
 import random
 import statistics
 import sys
 from collections import Counter, defaultdict
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 
@@ -44,7 +46,7 @@ from likho.rewrite import rewrite
 from likho.router import STAGES, Intent, route_with_proposal
 from likho.schemas import Register, Token, TokenKind
 from likho.tokenize import SIGNAL_BY_CONFIDENCE, split, tag
-from likho.transliterate import transliterate_tokens
+from likho.transliterate import transliterate_tokens, xlit_candidates
 
 logger = get_logger("eval.run_eval")
 
@@ -456,40 +458,79 @@ def write_human_rubric(run_id: str, rewrite_cases: list[dict], out_dir: Path = H
     return path
 
 
-def run_all(run_id: str) -> tuple[dict, list[dict]]:
-    """Every stage, every ablation (§5), end to end. Returns (metrics, CSV rows)."""
+def run_all(run_id: str, checkpoint: Path | None = None) -> tuple[dict, list[dict]]:
+    """Every stage, every ablation (§5), end to end. Returns (metrics, CSV rows).
+
+    With `checkpoint`, each finished phase is saved there and a rerun with the
+    same file skips it, so a crash late in a ~1 h real-model run does not lose
+    the earlier phases. The end-to-end phase is last and is never skipped.
+    """
     metrics: dict = {"meta": full.meta(run_id)}
     timings: dict = {}
     cases = load_cases("test")
-
-    for rescore in (True, False):
-        get_xlit_engine(rescore=rescore)  # load before timing
-    on, timings["transliterate_50_words_rescore_on_s"] = full.timed(eval_transliterate, 5, True)
-    off, timings["transliterate_50_words_rescore_off_s"] = full.timed(eval_transliterate, 5, False)
-    metrics["transliterate"] = {"rescore_on": on, "rescore_off": off}  # ablation 2
-    logger.info("transliterate done")
-
-    tok_off, timings["tokenize_test_llm_off_s"] = full.timed(eval_tokenize, "test", False)
-    tok_on, timings["tokenize_test_llm_on_s"] = full.timed(eval_tokenize, "test", True)
-    metrics["tokenize"] = {"llm_tiebreak_on": tok_on, "llm_tiebreak_off": tok_off}  # ablation 3
-    logger.info("tokenize done")
-
-    metrics["rerank"] = eval_rerank("test", 5, DEFAULT_WEIGHTS)  # ablation 1
-    route_on, timings["route_30_cases_llm_on_s"] = full.timed(eval_route, True)
-    route_off, timings["route_30_cases_llm_off_s"] = full.timed(eval_route, False)
-    metrics["route"] = {"llm_on": route_on, "llm_off": route_off}
-    logger.info("rerank and route done")
-
-    rewrite_result, timings["rewrite_gold_all_registers_s"] = full.timed(
-        eval_rewrite, list(Register), None
+    saved: dict = (
+        json.loads(checkpoint.read_text(encoding="utf-8"))
+        if checkpoint and checkpoint.exists()
+        else {}
     )
-    judged = [c["judge_meaning"] for c in rewrite_result["cases"] if c.get("judge_parsed")]
-    rewrite_result["judge_meaning_overall"] = statistics.fmean(judged) if judged else None
-    metrics["rewrite"] = rewrite_result
-    logger.info("rewrite done")
+    if saved:
+        metrics["meta"]["resumed_phases"] = list(saved)
 
+    def phase(name: str, fn: Callable[[], dict]) -> None:
+        if name in saved:
+            logger.info("%s: taken from checkpoint %s", name, checkpoint)
+            metrics.update(saved[name]["metrics"])
+            timings.update(saved[name]["timings"])
+            return
+        before = set(timings)
+        out = fn()
+        metrics.update(out)
+        logger.info("%s done", name)
+        if checkpoint:
+            new_timings = {k: v for k, v in timings.items() if k not in before}
+            saved[name] = {"metrics": out, "timings": new_timings}
+            checkpoint.write_text(json.dumps(saved, ensure_ascii=False), encoding="utf-8")
+
+    def transliterate() -> dict:
+        for rescore in (True, False):
+            get_xlit_engine(rescore=rescore)  # load before timing
+        on, timings["transliterate_50_words_rescore_on_s"] = full.timed(eval_transliterate, 5, True)
+        off, timings["transliterate_50_words_rescore_off_s"] = full.timed(
+            eval_transliterate, 5, False
+        )
+        # Drop the rescore-off engine before Param-1 and IndicTrans2 load: on a
+        # 16 GB machine every GB counts. Both caches hold it.
+        xlit_candidates.cache_clear()
+        get_xlit_engine.cache_clear()
+        gc.collect()
+        return {"transliterate": {"rescore_on": on, "rescore_off": off}}  # ablation 2
+
+    def tokenize() -> dict:
+        tok_off, timings["tokenize_test_llm_off_s"] = full.timed(eval_tokenize, "test", False)
+        tok_on, timings["tokenize_test_llm_on_s"] = full.timed(eval_tokenize, "test", True)
+        return {"tokenize": {"llm_tiebreak_on": tok_on, "llm_tiebreak_off": tok_off}}  # abl. 3
+
+    def rerank_and_route() -> dict:
+        rerank = eval_rerank("test", 5, DEFAULT_WEIGHTS)  # ablation 1
+        route_on, timings["route_30_cases_llm_on_s"] = full.timed(eval_route, True)
+        route_off, timings["route_30_cases_llm_off_s"] = full.timed(eval_route, False)
+        return {"rerank": rerank, "route": {"llm_on": route_on, "llm_off": route_off}}
+
+    def rewrite_phase() -> dict:
+        result, timings["rewrite_gold_all_registers_s"] = full.timed(
+            eval_rewrite, list(Register), None
+        )
+        judged = [c["judge_meaning"] for c in result["cases"] if c.get("judge_parsed")]
+        result["judge_meaning_overall"] = statistics.fmean(judged) if judged else None
+        return {"rewrite": result}
+
+    phase("transliterate", transliterate)
+    phase("tokenize", tokenize)
+    phase("rerank_route", rerank_and_route)
+    phase("rewrite", rewrite_phase)
+
+    rows, responses = full.end_to_end(cases)  # releases Param-1 halfway
     metrics["translate"] = full.translation_stage(cases)
-    rows, responses = full.end_to_end(cases)
     metrics["ablation_translit_sentence"] = full.translit_sentence_baseline(cases, rows)  # 4
     metrics["end_to_end"] = full.summarise_e2e(rows)
     metrics["end_to_end"]["translation"] = full.e2e_translation_scores(rows)
@@ -553,8 +594,10 @@ def main() -> None:
         run_id = args.run_id or datetime.now().strftime("%Y%m%d-%H%M")
         if settings.mock_models:  # gitignored: stub numbers must never be committed
             run_id = f"mock-{run_id}"
-        metrics, rows = run_all(run_id)
+        checkpoint = full.RESULTS / f"{run_id}_checkpoint.tmp"
+        metrics, rows = run_all(run_id, checkpoint)
         json_path = full.write_results(run_id, metrics, rows)
+        checkpoint.unlink(missing_ok=True)
         rubric = write_human_rubric(run_id, metrics["rewrite"]["cases"])
         print_summary(metrics, json_path)
         print(f"human rubric sheet: {rubric}")

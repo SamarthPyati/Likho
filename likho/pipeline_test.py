@@ -3,7 +3,7 @@ import pytest
 from likho import pipeline
 from likho.config import settings
 from likho.errors import StageFailure
-from likho.pipeline import assist, disabled_stages
+from likho.pipeline import add_translation, assist, assist_untranslated, disabled_stages
 from likho.schemas import AssistRequest, Register, Stage, TokenKind
 
 EXAMPLE = "kal ke meeting ke liye Rohit ko bata dena"
@@ -155,3 +155,21 @@ def test_user_text_is_not_logged(caplog):
     caplog.set_level("DEBUG", logger="likho")
     assist(AssistRequest(text=EXAMPLE, translate=True))
     assert "meeting" not in caplog.text and "Rohit" not in caplog.text
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "kal ke meeting ke liye Rohit ko bata dena",
+        "मुझे kal तक report भेजनी है",
+        "please call me",
+        "",
+    ],
+)
+def test_two_halves_equal_one_assist_call(text):
+    request = AssistRequest(text=text, translate=True)
+    whole = assist(request)
+    halves = add_translation(text, assist_untranslated(request))
+    ignore = {"timings_ms"}
+    assert halves.model_dump(exclude=ignore) == whole.model_dump(exclude=ignore)
+    assert set(halves.timings_ms) == set(whole.timings_ms)
