@@ -400,7 +400,9 @@ def write_results(run_id: str, metrics: dict, rows: list[dict], out_dir: Path = 
     json_path = out_dir / f"{run_id}_metrics.json"
     json_path.write_text(json.dumps(metrics, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     with (out_dir / f"{run_id}_cases.csv").open("w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=CSV_FIELDS, extrasaction="ignore")
+        writer = csv.DictWriter(
+            f, fieldnames=CSV_FIELDS, extrasaction="ignore", lineterminator="\n"
+        )
         writer.writeheader()
         writer.writerows(rows)
     return json_path

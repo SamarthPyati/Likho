@@ -68,7 +68,7 @@ class Table:
 
     def write_csv(self, folder: Path) -> None:
         with (folder / f"{self.name}.csv").open("w", newline="", encoding="utf-8") as f:
-            writer = csv.writer(f)
+            writer = csv.writer(f, lineterminator="\n")
             writer.writerow(self.header)
             writer.writerows(self.rows)
 

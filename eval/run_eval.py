@@ -444,7 +444,7 @@ def write_human_rubric(run_id: str, rewrite_cases: list[dict], out_dir: Path = H
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / f"{run_id}_rubric.csv"
     with path.open("w", encoding="utf-8", newline="") as f:
-        writer = csv.writer(f)
+        writer = csv.writer(f, lineterminator="\n")
         rater_cols = [f"{rater}_{axis}" for rater in ("rater_a", "rater_b") for axis in AXES]
         writer.writerow(["run", "case", "register", "original", "rewritten", *rater_cols])
         for i, case_id in enumerate(chosen):
