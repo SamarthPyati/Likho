@@ -75,7 +75,9 @@ likho/
 │   ├── metrics.py              # CER, WER, top-k accuracy, chrF++
 │   ├── judge.py                # LLM-as-judge for the rewrite stage
 │   ├── run_eval.py
+│   ├── export_results.py       # one run → results/ for the report
 │   └── results/                # committed JSON + CSV outputs
+├── results/                    # generated report folder + FAILURE_ANALYSIS.md
 ├── docs/
 └── tests/
 ```

@@ -14,8 +14,10 @@ import argparse
 import csv
 import hashlib
 import json
+import re
 import shutil
 import sys
+from collections import Counter
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -239,7 +241,8 @@ def build_tables(m: dict) -> list[Table]:
         ],
         "Judge scores are 1–5 from Param-1 acting as judge — the same model family that "
         "wrote the rewrite, so treat them as indicative only; the human rubric is the "
-        "real measure. Rejected rewrites fall back to the input text.",
+        "real measure. When a rewrite is rejected the app shows no rewrite and keeps "
+        "the Devanagari (FR7).",
     )
     for reg, d in w["registers"].items():
         j = d["judge_mean"]
@@ -255,9 +258,19 @@ def build_tables(m: dict) -> list[Table]:
         )
     tables.append(t)
 
-    t = Table("rewrite_rejections", "Why rewrites were rejected", ["register", "reason", "count"])
+    t = Table(
+        "rewrite_rejections",
+        "Why rewrites were rejected",
+        ["register", "reason", "count"],
+        "Reasons from the rule check in `likho/rewrite.py` (`validate`), grouped: the "
+        "exact length ratios are in `metrics.json`.",
+    )
     for reg, d in w["registers"].items():
-        for reason, count in sorted(d["rejected_by_reason"].items(), key=lambda kv: -kv[1]):
+        grouped: Counter = Counter()
+        for reason, count in d["rejected_by_reason"].items():
+            reason = reason.removeprefix("rewrite rejected: ")
+            grouped[re.sub(r"length ratio [\d.]+ ", "length ratio ", reason)] += count
+        for reason, count in grouped.most_common():
             t.add(reg, reason, count)
     tables.append(t)
 
@@ -333,9 +346,10 @@ def build_tables(m: dict) -> list[Table]:
     t = Table(
         "failure_buckets",
         "Failure taxonomy F1–F12 (`docs/EVALUATION.md` §4)",
-        ["code", "meaning", "cases (primary)", "cases (any)"],
+        ["code", "meaning", "cases (primary)", "occurrences (any)"],
         "*Primary* is the earliest stage that failed in a case — each failing case is "
-        "counted once. *Any* counts every case where the failure appears at all.",
+        "counted once. *Any* counts every occurrence, including after an earlier failure "
+        "(a case with two F8 words adds two).",
     )
     for code, meaning in CODES.items():
         t.add(code, meaning, e["failures_primary"].get(code, 0), e["failures_any"].get(code, 0))
@@ -357,6 +371,43 @@ def build_tables(m: dict) -> list[Table]:
     tables.append(t)
 
     return tables
+
+
+_LATIN_WORD = re.compile(r"[A-Za-z]+")
+
+
+def english_kept_table(rows: list[dict]) -> Table:
+    """U5 ("my English words stay English"), which no failure code measures.
+
+    For each accepted end-to-end rewrite, the Roman words of the gold
+    Devanagari — the sentence's real English words and names — are looked up
+    in the rewrite. English-only cases (gold equals input) are excluded: there
+    the whole rewrite is English by design.
+    """
+    cases = words = kept = changed = changed_passed = 0
+    for row in rows:
+        gold = [w.lower() for w in _LATIN_WORD.findall(row["expected_native"])]
+        if not row["rewritten"] or not gold or row["expected_native"] == row["input"]:
+            continue
+        out = {w.lower() for w in _LATIN_WORD.findall(row["rewritten"])}
+        cases += 1
+        words += len(gold)
+        kept += sum(w in out for w in gold)
+        if not set(gold) <= out:
+            changed += 1
+            changed_passed += row["passed"] == "True"
+    t = Table(
+        "rewrite_keeps_english",
+        "Does the rewrite keep English words and names in Roman? (PRD U5)",
+        ["measure", "value"],
+        "No failure code counts this. Computed from `cases.csv`: the Roman words of "
+        "each case's gold Devanagari, looked up in its accepted neutral rewrite.",
+    )
+    t.add("accepted rewrites of sentences with English words or names", cases)
+    t.add("rewrites that changed at least one of them", ratio(changed, cases))
+    t.add("…of which the case still passed every stage", changed_passed)
+    t.add("English words and names kept, overall", ratio(kept, words))
+    return t
 
 
 def examples_markdown(rows: list[dict]) -> str:
@@ -495,7 +546,8 @@ labelling protocol, are in `docs/EVALUATION.md` §2.
 ## Per stage
 
 {section('transliteration', 'token_classification', 'token_confusion', 'token_signals',
-         'rerank', 'routing', 'rewrite', 'rewrite_rejections', 'translation')}
+         'rerank', 'routing', 'rewrite', 'rewrite_rejections', 'rewrite_keeps_english',
+         'translation')}
 ## Ablations
 
 The four ablations from `docs/EVALUATION.md` §5:
@@ -558,6 +610,7 @@ def export(run_id: str, out: Path = OUT, results: Path = RESULTS, human: Path = 
             shutil.copyfile(src, out / "test_sets" / src.name)
 
     tables = build_tables(m)
+    tables.append(english_kept_table(rows))
     for table in tables:
         table.write_csv(out / "tables")
     (out / "examples.md").write_text(examples_markdown(rows), encoding="utf-8")

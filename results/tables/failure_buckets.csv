@@ -1,0 +1,14 @@
+code,meaning,cases (primary),occurrences (any)
+F1,Wrong vowel length,0,0
+F2,Schwa deletion error,2,2
+F3,Retroflex/dental confusion,0,0
+F4,Nukta mishandling,0,0
+F5,Loanword over-transliteration,0,0
+F6,Loanword under-transliteration,3,5
+F7,Named entity mangled,3,3
+F8,"Context ambiguity (gold in top-k, not chosen)",5,13
+F9,Router mis-stage,0,0
+F10,Rewrite drift or rejection,14,17
+F11,Translation error,2,7
+F12,Crash / timeout,0,0
+other,"Transliteration error outside F1–F4 (e.g. nasalisation, e/ai)",2,6

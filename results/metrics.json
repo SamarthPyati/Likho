@@ -1,0 +1,2289 @@
+{
+  "meta": {
+    "run": "20261105-m4",
+    "date_utc": "2026-11-05T10:53:50+00:00",
+    "git_commit": "576027c-dirty",
+    "mock_models": false,
+    "hardware": {
+      "platform": "macOS-27.0.1-arm64-arm-64bit",
+      "machine": "arm64",
+      "python": "3.10.19",
+      "llm_device": "mps",
+      "torch": "2.14.1"
+    },
+    "models": {
+      "llm": "bharatgenai/Param-1-2.9B-Instruct",
+      "translate": "ai4bharat/indictrans2-indic-en-1B"
+    },
+    "settings": {
+      "llm_router": true,
+      "llm_tiebreak": true,
+      "llm_seed": 3235,
+      "e2e_register": "neutral"
+    }
+  },
+  "transliterate": {
+    "rescore_on": {
+      "overall": {
+        "n": 50,
+        "top1": 0.58,
+        "top5": 0.78,
+        "cer": 0.09480122324159021
+      },
+      "ak_freq": {
+        "n": 13,
+        "top1": 0.6923076923076923,
+        "top5": 0.8461538461538461,
+        "cer": 0.08620689655172414
+      },
+      "ak_nef": {
+        "n": 13,
+        "top1": 0.46153846153846156,
+        "top5": 0.8461538461538461,
+        "cer": 0.136986301369863
+      },
+      "ak_nei": {
+        "n": 12,
+        "top1": 0.5833333333333334,
+        "top5": 0.5833333333333334,
+        "cer": 0.0821917808219178
+      },
+      "dakshina": {
+        "n": 12,
+        "top1": 0.5833333333333334,
+        "top5": 0.8333333333333334,
+        "cer": 0.07692307692307693
+      }
+    },
+    "rescore_off": {
+      "overall": {
+        "n": 50,
+        "top1": 0.46,
+        "top5": 0.78,
+        "cer": 0.12844036697247707
+      },
+      "ak_freq": {
+        "n": 13,
+        "top1": 0.46153846153846156,
+        "top5": 0.8461538461538461,
+        "cer": 0.12931034482758622
+      },
+      "ak_nef": {
+        "n": 13,
+        "top1": 0.46153846153846156,
+        "top5": 0.8461538461538461,
+        "cer": 0.136986301369863
+      },
+      "ak_nei": {
+        "n": 12,
+        "top1": 0.5,
+        "top5": 0.5833333333333334,
+        "cer": 0.136986301369863
+      },
+      "dakshina": {
+        "n": 12,
+        "top1": 0.4166666666666667,
+        "top5": 0.8333333333333334,
+        "cer": 0.1076923076923077
+      }
+    }
+  },
+  "tokenize": {
+    "llm_tiebreak_on": {
+      "n_tokens": 496,
+      "accuracy": 0.9838709677419355,
+      "macro_f1_hindi_english_ne": 0.9439506417759437,
+      "per_kind": {
+        "hindi": {
+          "precision": 0.9920634920634921,
+          "recall": 0.9868421052631579,
+          "f1": 0.9894459102902374,
+          "support": 380
+        },
+        "english": {
+          "precision": 0.927536231884058,
+          "recall": 1.0,
+          "f1": 0.9624060150375939,
+          "support": 64
+        },
+        "named_entity": {
+          "precision": 1.0,
+          "recall": 0.7857142857142857,
+          "f1": 0.88,
+          "support": 14
+        },
+        "numeric": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "punct": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 20
+        },
+        "devanagari": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 18
+        }
+      },
+      "confusion": {
+        "hindi": {
+          "hindi": 375,
+          "english": 5,
+          "named_entity": 0,
+          "numeric": 0,
+          "punct": 0,
+          "devanagari": 0
+        },
+        "english": {
+          "hindi": 0,
+          "english": 64,
+          "named_entity": 0,
+          "numeric": 0,
+          "punct": 0,
+          "devanagari": 0
+        },
+        "named_entity": {
+          "hindi": 3,
+          "english": 0,
+          "named_entity": 11,
+          "numeric": 0,
+          "punct": 0,
+          "devanagari": 0
+        },
+        "numeric": {
+          "hindi": 0,
+          "english": 0,
+          "named_entity": 0,
+          "numeric": 0,
+          "punct": 0,
+          "devanagari": 0
+        },
+        "punct": {
+          "hindi": 0,
+          "english": 0,
+          "named_entity": 0,
+          "numeric": 0,
+          "punct": 20,
+          "devanagari": 0
+        },
+        "devanagari": {
+          "hindi": 0,
+          "english": 0,
+          "named_entity": 0,
+          "numeric": 0,
+          "punct": 0,
+          "devanagari": 18
+        }
+      },
+      "signals": {
+        "dictionary": 242,
+        "frequency": 142,
+        "fixed": 38,
+        "loanword": 36,
+        "context": 25,
+        "orthography": 11,
+        "oov": 2
+      },
+      "errors": [
+        {
+          "case": "cm_006",
+          "surface": "maine",
+          "gold": "hindi",
+          "predicted": "english",
+          "signal": "loanword"
+        },
+        {
+          "case": "cm_021",
+          "surface": "Priya",
+          "gold": "named_entity",
+          "predicted": "hindi",
+          "signal": "dictionary"
+        },
+        {
+          "case": "cm_024",
+          "surface": "Bengaluru",
+          "gold": "named_entity",
+          "predicted": "hindi",
+          "signal": "dictionary"
+        },
+        {
+          "case": "cm_026",
+          "surface": "Asha",
+          "gold": "named_entity",
+          "predicted": "hindi",
+          "signal": "dictionary"
+        },
+        {
+          "case": "cm_036",
+          "surface": "jai",
+          "gold": "hindi",
+          "predicted": "english",
+          "signal": "loanword"
+        },
+        {
+          "case": "cm_040",
+          "surface": "maine",
+          "gold": "hindi",
+          "predicted": "english",
+          "signal": "loanword"
+        },
+        {
+          "case": "cm_045",
+          "surface": "chai",
+          "gold": "hindi",
+          "predicted": "english",
+          "signal": "loanword"
+        },
+        {
+          "case": "cm_045",
+          "surface": "use",
+          "gold": "hindi",
+          "predicted": "english",
+          "signal": "loanword"
+        }
+      ]
+    },
+    "llm_tiebreak_off": {
+      "n_tokens": 496,
+      "accuracy": 0.9838709677419355,
+      "macro_f1_hindi_english_ne": 0.9439506417759437,
+      "per_kind": {
+        "hindi": {
+          "precision": 0.9920634920634921,
+          "recall": 0.9868421052631579,
+          "f1": 0.9894459102902374,
+          "support": 380
+        },
+        "english": {
+          "precision": 0.927536231884058,
+          "recall": 1.0,
+          "f1": 0.9624060150375939,
+          "support": 64
+        },
+        "named_entity": {
+          "precision": 1.0,
+          "recall": 0.7857142857142857,
+          "f1": 0.88,
+          "support": 14
+        },
+        "numeric": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "punct": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 20
+        },
+        "devanagari": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 18
+        }
+      },
+      "confusion": {
+        "hindi": {
+          "hindi": 375,
+          "english": 5,
+          "named_entity": 0,
+          "numeric": 0,
+          "punct": 0,
+          "devanagari": 0
+        },
+        "english": {
+          "hindi": 0,
+          "english": 64,
+          "named_entity": 0,
+          "numeric": 0,
+          "punct": 0,
+          "devanagari": 0
+        },
+        "named_entity": {
+          "hindi": 3,
+          "english": 0,
+          "named_entity": 11,
+          "numeric": 0,
+          "punct": 0,
+          "devanagari": 0
+        },
+        "numeric": {
+          "hindi": 0,
+          "english": 0,
+          "named_entity": 0,
+          "numeric": 0,
+          "punct": 0,
+          "devanagari": 0
+        },
+        "punct": {
+          "hindi": 0,
+          "english": 0,
+          "named_entity": 0,
+          "numeric": 0,
+          "punct": 20,
+          "devanagari": 0
+        },
+        "devanagari": {
+          "hindi": 0,
+          "english": 0,
+          "named_entity": 0,
+          "numeric": 0,
+          "punct": 0,
+          "devanagari": 18
+        }
+      },
+      "signals": {
+        "dictionary": 242,
+        "frequency": 142,
+        "fixed": 38,
+        "loanword": 36,
+        "context": 25,
+        "orthography": 11,
+        "oov": 2
+      },
+      "errors": [
+        {
+          "case": "cm_006",
+          "surface": "maine",
+          "gold": "hindi",
+          "predicted": "english",
+          "signal": "loanword"
+        },
+        {
+          "case": "cm_021",
+          "surface": "Priya",
+          "gold": "named_entity",
+          "predicted": "hindi",
+          "signal": "dictionary"
+        },
+        {
+          "case": "cm_024",
+          "surface": "Bengaluru",
+          "gold": "named_entity",
+          "predicted": "hindi",
+          "signal": "dictionary"
+        },
+        {
+          "case": "cm_026",
+          "surface": "Asha",
+          "gold": "named_entity",
+          "predicted": "hindi",
+          "signal": "dictionary"
+        },
+        {
+          "case": "cm_036",
+          "surface": "jai",
+          "gold": "hindi",
+          "predicted": "english",
+          "signal": "loanword"
+        },
+        {
+          "case": "cm_040",
+          "surface": "maine",
+          "gold": "hindi",
+          "predicted": "english",
+          "signal": "loanword"
+        },
+        {
+          "case": "cm_045",
+          "surface": "chai",
+          "gold": "hindi",
+          "predicted": "english",
+          "signal": "loanword"
+        },
+        {
+          "case": "cm_045",
+          "surface": "use",
+          "gold": "hindi",
+          "predicted": "english",
+          "signal": "loanword"
+        }
+      ]
+    }
+  },
+  "rerank": {
+    "weights": {
+      "alpha": 1.0,
+      "beta": 2.0,
+      "gamma": 0.5
+    },
+    "aksharantar_words": {
+      "n": 50,
+      "top1_off": 0.58,
+      "top1_on": 0.58
+    },
+    "test_sentences": {
+      "n_hindi_tokens": 380,
+      "top1_off": 0.8973684210526316,
+      "top1_on": 0.9342105263157895,
+      "top1_off_lenient": 0.9105263157894737,
+      "top1_on_lenient": 0.9526315789473684,
+      "topk_ceiling": 0.968421052631579,
+      "fixed_by_rerank": 16,
+      "broken_by_rerank": 2,
+      "f8_in_topk_not_chosen": 13,
+      "not_in_topk": 12,
+      "f8_cases": [
+        {
+          "case": "cm_005",
+          "surface": "kha",
+          "gold": "खा",
+          "chosen": "कहा",
+          "rank": 1
+        },
+        {
+          "case": "cm_006",
+          "surface": "mez",
+          "gold": "मेज़",
+          "chosen": "मेज",
+          "rank": 0
+        },
+        {
+          "case": "cm_010",
+          "surface": "maa",
+          "gold": "माँ",
+          "chosen": "मां",
+          "rank": 1
+        },
+        {
+          "case": "cm_035",
+          "surface": "hoon",
+          "gold": "हूं",
+          "chosen": "हूँ",
+          "rank": 0
+        },
+        {
+          "case": "cm_043",
+          "surface": "wahan",
+          "gold": "वहां",
+          "chosen": "वाहन",
+          "rank": 0
+        },
+        {
+          "case": "cm_043",
+          "surface": "ki",
+          "gold": "कि",
+          "chosen": "की",
+          "rank": 0
+        },
+        {
+          "case": "cm_045",
+          "surface": "roz",
+          "gold": "रोज़",
+          "chosen": "रोज",
+          "rank": 0
+        },
+        {
+          "case": "cm_045",
+          "surface": "ki",
+          "gold": "कि",
+          "chosen": "की",
+          "rank": 0
+        },
+        {
+          "case": "cm_045",
+          "surface": "zaroorat",
+          "gold": "ज़रूरत",
+          "chosen": "जरूरत",
+          "rank": 1
+        },
+        {
+          "case": "cm_046",
+          "surface": "hoon",
+          "gold": "हूं",
+          "chosen": "हूँ",
+          "rank": 0
+        },
+        {
+          "case": "cm_046",
+          "surface": "ki",
+          "gold": "कि",
+          "chosen": "की",
+          "rank": 0
+        },
+        {
+          "case": "cm_046",
+          "surface": "hoon",
+          "gold": "हूं",
+          "chosen": "हूँ",
+          "rank": 0
+        },
+        {
+          "case": "cm_046",
+          "surface": "ki",
+          "gold": "कि",
+          "chosen": "की",
+          "rank": 0
+        }
+      ]
+    }
+  },
+  "route": {
+    "llm_on": {
+      "n": 30,
+      "use_llm": true,
+      "accuracy": 1.0,
+      "llm_proposal_accuracy": 0.4666666666666667,
+      "llm_unparsed_rate": 0.13333333333333333,
+      "fallback_rate": 0.5333333333333333,
+      "errors": [],
+      "llm_disagreements": [
+        {
+          "case": "rt_07",
+          "expected_intent": "roman_hinglish",
+          "llm_proposal": "devanagari",
+          "stages": [
+            "route",
+            "tokenize",
+            "transliterate",
+            "rerank",
+            "rewrite"
+          ],
+          "correct": true,
+          "source": "rule_fallback"
+        },
+        {
+          "case": "rt_09",
+          "expected_intent": "roman_hinglish",
+          "llm_proposal": "english",
+          "stages": [
+            "route",
+            "tokenize",
+            "transliterate",
+            "rerank",
+            "rewrite"
+          ],
+          "correct": true,
+          "source": "rule_fallback"
+        },
+        {
+          "case": "rt_11",
+          "expected_intent": "english",
+          "llm_proposal": "roman_hinglish",
+          "stages": [
+            "route",
+            "tokenize",
+            "rewrite"
+          ],
+          "correct": true,
+          "source": "rule_fallback"
+        },
+        {
+          "case": "rt_15",
+          "expected_intent": "english",
+          "llm_proposal": "roman_hinglish",
+          "stages": [
+            "route",
+            "tokenize",
+            "rewrite"
+          ],
+          "correct": true,
+          "source": "rule_fallback"
+        },
+        {
+          "case": "rt_16",
+          "expected_intent": "english",
+          "llm_proposal": "devanagari",
+          "stages": [
+            "route",
+            "tokenize",
+            "rewrite"
+          ],
+          "correct": true,
+          "source": "rule_fallback"
+        },
+        {
+          "case": "rt_19",
+          "expected_intent": "devanagari",
+          "llm_proposal": "english",
+          "stages": [
+            "route",
+            "tokenize",
+            "rewrite"
+          ],
+          "correct": true,
+          "source": "rule_fallback"
+        },
+        {
+          "case": "rt_20",
+          "expected_intent": "devanagari",
+          "llm_proposal": "roman_hinglish",
+          "stages": [
+            "route",
+            "tokenize",
+            "rewrite"
+          ],
+          "correct": true,
+          "source": "rule_fallback"
+        },
+        {
+          "case": "rt_21",
+          "expected_intent": "devanagari",
+          "llm_proposal": "roman_hinglish",
+          "stages": [
+            "route",
+            "tokenize",
+            "rewrite"
+          ],
+          "correct": true,
+          "source": "rule_fallback"
+        },
+        {
+          "case": "rt_23",
+          "expected_intent": "mixed_script",
+          "llm_proposal": "devanagari",
+          "stages": [
+            "route",
+            "tokenize",
+            "transliterate",
+            "rerank",
+            "rewrite"
+          ],
+          "correct": true,
+          "source": "rule_fallback"
+        },
+        {
+          "case": "rt_24",
+          "expected_intent": "mixed_script",
+          "llm_proposal": "roman_hinglish",
+          "stages": [
+            "route",
+            "tokenize",
+            "transliterate",
+            "rerank",
+            "rewrite"
+          ],
+          "correct": true,
+          "source": "rule_fallback"
+        },
+        {
+          "case": "rt_25",
+          "expected_intent": "mixed_script",
+          "llm_proposal": "devanagari",
+          "stages": [
+            "route",
+            "tokenize",
+            "transliterate",
+            "rerank",
+            "rewrite"
+          ],
+          "correct": true,
+          "source": "rule_fallback"
+        },
+        {
+          "case": "rt_26",
+          "expected_intent": "mixed_script",
+          "llm_proposal": "roman_hinglish",
+          "stages": [
+            "route",
+            "tokenize",
+            "transliterate",
+            "rerank",
+            "rewrite"
+          ],
+          "correct": true,
+          "source": "rule_fallback"
+        },
+        {
+          "case": "rt_27",
+          "expected_intent": "empty",
+          "llm_proposal": null,
+          "stages": [
+            "route"
+          ],
+          "correct": true,
+          "source": "rule_fallback"
+        },
+        {
+          "case": "rt_28",
+          "expected_intent": "empty",
+          "llm_proposal": null,
+          "stages": [
+            "route"
+          ],
+          "correct": true,
+          "source": "rule_fallback"
+        },
+        {
+          "case": "rt_29",
+          "expected_intent": "empty",
+          "llm_proposal": null,
+          "stages": [
+            "route"
+          ],
+          "correct": true,
+          "source": "rule_fallback"
+        },
+        {
+          "case": "rt_30",
+          "expected_intent": "empty",
+          "llm_proposal": null,
+          "stages": [
+            "route"
+          ],
+          "correct": true,
+          "source": "rule_fallback"
+        }
+      ]
+    },
+    "llm_off": {
+      "n": 30,
+      "use_llm": false,
+      "accuracy": 1.0,
+      "llm_proposal_accuracy": null,
+      "llm_unparsed_rate": null,
+      "fallback_rate": 1.0,
+      "errors": [],
+      "llm_disagreements": []
+    }
+  },
+  "rewrite": {
+    "n_cases": 50,
+    "registers": {
+      "casual": {
+        "accepted": 37,
+        "rejected": 13,
+        "rejected_by_reason": {
+          "rewrite rejected: length ratio 1.93 outside 0.5–1.6": 1,
+          "rewrite rejected: length ratio 1.67 outside 0.5–1.6": 1,
+          "rewrite rejected: script changed from Roman": 7,
+          "rewrite rejected: length ratio 1.79 outside 0.5–1.6": 1,
+          "rewrite rejected: length ratio 1.72 outside 0.5–1.6": 1,
+          "rewrite rejected: length ratio 1.62 outside 0.5–1.6": 1,
+          "rewrite rejected: length ratio 1.95 outside 0.5–1.6": 1
+        },
+        "mean_length_ratio": 1.1477740810856338,
+        "judge_fallback_rate": 0.0,
+        "judge_mean": {
+          "meaning": 3.972972972972973,
+          "register": 4.486486486486487,
+          "fluency": 4.486486486486487
+        }
+      },
+      "neutral": {
+        "accepted": 40,
+        "rejected": 10,
+        "rejected_by_reason": {
+          "rewrite rejected: script changed from Roman": 10
+        },
+        "mean_length_ratio": 0.9974402432702887,
+        "judge_fallback_rate": 0.0,
+        "judge_mean": {
+          "meaning": 4.35,
+          "register": 4.625,
+          "fluency": 4.625
+        }
+      },
+      "formal": {
+        "accepted": 39,
+        "rejected": 11,
+        "rejected_by_reason": {
+          "rewrite rejected: script changed from Roman": 9,
+          "rewrite rejected: length ratio 1.81 outside 0.5–1.6": 1,
+          "rewrite rejected: length ratio 1.68 outside 0.5–1.6": 1
+        },
+        "mean_length_ratio": 1.0839017167221192,
+        "judge_fallback_rate": 0.0,
+        "judge_mean": {
+          "meaning": 4.512820512820513,
+          "register": 4.717948717948718,
+          "fluency": 4.717948717948718
+        }
+      }
+    },
+    "cases": [
+      {
+        "case": "cm_001",
+        "register": "casual",
+        "rewritten": "आज मौसम बहुत अच्छा है, है ना?",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_002",
+        "register": "casual",
+        "rewritten": "तुम कब घर आओगे?",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_003",
+        "register": "casual",
+        "rewritten": "मुझे थोड़ा पानी चाहिए, क्या?",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_004",
+        "register": "casual",
+        "rewritten": "अरे, हम लोग शाम को मिलेंगे, सही?",
+        "judge_meaning": 3,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_005",
+        "register": "casual",
+        "rewritten": "क्या आपने खाना खा लिया?",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_006",
+        "register": "casual",
+        "rewritten": "मैंने किताब मेज़ पर रख दी है।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_007",
+        "register": "casual",
+        "rewritten": "काम कल तक पूरा होना चाहिए, है ना?",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_008",
+        "register": "casual",
+        "rewritten": "उन्होंने मुझे सच बताया, है ना?",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_009",
+        "register": "casual",
+        "rewritten": "बच्चे बाहर खेल रहे हैं",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_010",
+        "register": "casual",
+        "rewritten": "मेरी माँ ने आज खीर बनाई।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_011",
+        "register": "casual",
+        "rewritten": "कल कार्यालय जाना है, क्या?",
+        "judge_meaning": 3,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_012",
+        "register": "casual",
+        "rewritten": "कल के मीटिंग के लिए Rohit को बताना।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_013",
+        "register": "casual",
+        "rewritten": null,
+        "rejected": "rewrite rejected: length ratio 1.93 outside 0.5–1.6"
+      },
+      {
+        "case": "cm_014",
+        "register": "casual",
+        "rewritten": null,
+        "rejected": "rewrite rejected: length ratio 1.67 outside 0.5–1.6"
+      },
+      {
+        "case": "cm_015",
+        "register": "casual",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_016",
+        "register": "casual",
+        "rewritten": null,
+        "rejected": "rewrite rejected: length ratio 1.79 outside 0.5–1.6"
+      },
+      {
+        "case": "cm_017",
+        "register": "casual",
+        "rewritten": "कल बैंक जाना है, क्या?",
+        "judge_meaning": 3,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_018",
+        "register": "casual",
+        "rewritten": "उसका स्कूटर टूट गया।",
+        "judge_meaning": 3,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_019",
+        "register": "casual",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_020",
+        "register": "casual",
+        "rewritten": "अरे, छात्रावास का खाना बहुत अच्छा नहीं है",
+        "judge_meaning": 1,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_021",
+        "register": "casual",
+        "rewritten": "अरे, प्रिया और मैं कल दिल्ली जा रहे हैं!",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_022",
+        "register": "casual",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_023",
+        "register": "casual",
+        "rewritten": "अरे, हमने अमेज़ॅन से एक नया फोन मंगवाया।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_024",
+        "register": "casual",
+        "rewritten": "बंगालुरू में आज बारिश हो रही है, है ना?",
+        "judge_meaning": 3,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_025",
+        "register": "casual",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_026",
+        "register": "casual",
+        "rewritten": "अशा दीदी कल आ रही हैं",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_027",
+        "register": "casual",
+        "rewritten": "क्या आपने शर्मा sir को ईमेल किया?",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_028",
+        "register": "casual",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_029",
+        "register": "casual",
+        "rewritten": "मुझे पता ही नहीं था, है ना?",
+        "judge_meaning": 3,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_030",
+        "register": "casual",
+        "rewritten": "अरे, मैं भी साथ चलूँगा।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_031",
+        "register": "casual",
+        "rewritten": null,
+        "rejected": "rewrite rejected: length ratio 1.72 outside 0.5–1.6"
+      },
+      {
+        "case": "cm_032",
+        "register": "casual",
+        "rewritten": "हम तो कल ही निकल गए थे, है ना?",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_033",
+        "register": "casual",
+        "rewritten": "इस किताब में बहुत सारी कहानियां हैं।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_034",
+        "register": "casual",
+        "rewritten": null,
+        "rejected": "rewrite rejected: length ratio 1.62 outside 0.5–1.6"
+      },
+      {
+        "case": "cm_035",
+        "register": "casual",
+        "rewritten": "मैं बैंक के पास खड़ा हूं",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_036",
+        "register": "casual",
+        "rewritten": "अरे, टीम ने जीत हासिल की!",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_037",
+        "register": "casual",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_038",
+        "register": "casual",
+        "rewritten": null,
+        "rejected": "rewrite rejected: length ratio 1.95 outside 0.5–1.6"
+      },
+      {
+        "case": "cm_039",
+        "register": "casual",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_040",
+        "register": "casual",
+        "rewritten": "मैंने सबमिट कर दिया है।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_041",
+        "register": "casual",
+        "rewritten": "कल तक सब ठीक हो जाएगा, है ना?",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_042",
+        "register": "casual",
+        "rewritten": "उसने मेरा संदेश नजरअंदाज कर दिया",
+        "judge_meaning": 3,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_043",
+        "register": "casual",
+        "rewritten": "अरे, कल सुबह मैं जल्दी उठा और कॉलेज गया क्योंकि पहला lecture 8 बजे था, लेकिन जब मैं वहाँ पहुँचा तो पता चला कि प्रोफ़ेसर ने क्लास को रद्द कर दिया है, इसलिए मैं पुस्तकालय में चला गया और दो घंटे तक अपने प्रोजेक्ट पर काम किया, फिर दोपहर को दोस्तों के साथ कैफ़े में खाना खाया और शाम को घर वापस आ गया।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_044",
+        "register": "casual",
+        "rewritten": "अरे यार, इस सप्ताहांत हम सब Goa जाने का प्लान बना रहे हैं, तो तुम भी अपनी leave approve करवा लो और tickets जल्दी बुक कर लेना, क्योंकि बाद में उड़ान बहुत महंगी हो जाती है और होटल भी नहीं मिलता, बाकी विवरण मैं रात को WhatsApp पर भेज दूंगा।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_045",
+        "register": "casual",
+        "rewritten": "अरे, क्या आपने मेरे दादाजी के बारे में सुना है? वह हर रोज सुबह 5 बजे उठते हैं, फिर पास के पार्क में एक घंटे तक टहलते हैं, वापस आकर अदरक वाली चाय पीते हैं और अखबार पढ़ते हैं। उनका कहना है कि अगर इंसान अपनी दिनचर्या ठीक रखे तो उसे कभी डॉक्टर के पास जाने की ज़रूरत नहीं पड़ती।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_046",
+        "register": "casual",
+        "rewritten": "हाय, दोस्त, कल रात मेरे घर के पास बिजली चली गई थी और इंटरनेट भी काम नहीं कर रहा था, इसलिए मैं अपनी assignment time पर जमा नहीं कर पाया, क्या आप मुझे दो दिन का extension दे सकते हैं, मैं वादा करता हूं कि भविष्य में ऐसा नहीं होगा, ठीक है?",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_047",
+        "register": "casual",
+        "rewritten": "कल जा रहे हैं, क्या?",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_048",
+        "register": "casual",
+        "rewritten": "आज बहुत गर्मी है, है ना?",
+        "judge_meaning": 3,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_049",
+        "register": "casual",
+        "rewritten": "क्या आप मेरी मदद कर सकते हैं?",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_050",
+        "register": "casual",
+        "rewritten": "नमस्ते, मेरा नाम रोहित है।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_001",
+        "register": "neutral",
+        "rewritten": "आज मौसम बहुत अच्छा है।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_002",
+        "register": "neutral",
+        "rewritten": "तुम कब घर आओगे?",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_003",
+        "register": "neutral",
+        "rewritten": "मुझे थोड़ा पानी चाहिए।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_004",
+        "register": "neutral",
+        "rewritten": "हम लोग शाम को मिलेंगे।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_005",
+        "register": "neutral",
+        "rewritten": "क्या आपने खाना खा लिया?",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_006",
+        "register": "neutral",
+        "rewritten": "मैंने किताब मेज़ पर रख दी है।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_007",
+        "register": "neutral",
+        "rewritten": "कल तक यह काम पूरा करना होगा।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_008",
+        "register": "neutral",
+        "rewritten": "उन्होंने मुझे सच बताया।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_009",
+        "register": "neutral",
+        "rewritten": "बच्चे बाहर खेल रहे हैं।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_010",
+        "register": "neutral",
+        "rewritten": "मेरी माँ ने आज खीर बनाई।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_011",
+        "register": "neutral",
+        "rewritten": "मुझे कल कार्यालय जाना है।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_012",
+        "register": "neutral",
+        "rewritten": "कल के बैठक के लिए Rohit को बता दें।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_013",
+        "register": "neutral",
+        "rewritten": "मेरा फोन चार्ज नहीं हो रहा है।",
+        "judge_meaning": 3,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_014",
+        "register": "neutral",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_015",
+        "register": "neutral",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_016",
+        "register": "neutral",
+        "rewritten": "laptop की बैटरी जल्दी खत्म हो जाती है।",
+        "judge_meaning": 3,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_017",
+        "register": "neutral",
+        "rewritten": "मुझे कल बैंक जाना है।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_018",
+        "register": "neutral",
+        "rewritten": "उसका स्कूटर खराब हो गया।",
+        "judge_meaning": 3,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_019",
+        "register": "neutral",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_020",
+        "register": "neutral",
+        "rewritten": "खाना अच्छा नहीं है।",
+        "judge_meaning": 1,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_021",
+        "register": "neutral",
+        "rewritten": "Priya और मैं कल दिल्ली जा रहे हैं।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_022",
+        "register": "neutral",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_023",
+        "register": "neutral",
+        "rewritten": "हमने Amazon से नया फोन मंगवाया।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_024",
+        "register": "neutral",
+        "rewritten": "बंगालुरू में आज बारिश हो रही है।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_025",
+        "register": "neutral",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_026",
+        "register": "neutral",
+        "rewritten": "दीदी कल आ रही हैं।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_027",
+        "register": "neutral",
+        "rewritten": "क्या आप शर्मा सर को ईमेल कर चुके हैं?",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_028",
+        "register": "neutral",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_029",
+        "register": "neutral",
+        "rewritten": "मुझे पता ही नहीं था।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_030",
+        "register": "neutral",
+        "rewritten": "इस बार मैं भी आऊंगा।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_031",
+        "register": "neutral",
+        "rewritten": "घर में कोई नहीं है।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_032",
+        "register": "neutral",
+        "rewritten": "हम कल ही निकल गए थे।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_033",
+        "register": "neutral",
+        "rewritten": "इस किताब में बहुत कहानियां हैं।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_034",
+        "register": "neutral",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_035",
+        "register": "neutral",
+        "rewritten": "मैं बैंक के पास खड़ा हूं।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_036",
+        "register": "neutral",
+        "rewritten": "टीम ने जीत हासिल की।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_037",
+        "register": "neutral",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_038",
+        "register": "neutral",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_039",
+        "register": "neutral",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_040",
+        "register": "neutral",
+        "rewritten": "मैंने फॉर्म सबमिट कर दिया है।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_041",
+        "register": "neutral",
+        "rewritten": "कल तक सब ठीक हो जाएगा।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_042",
+        "register": "neutral",
+        "rewritten": "उसने मेरा संदेश नजरअंदाज कर दिया।",
+        "judge_meaning": 3,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_043",
+        "register": "neutral",
+        "rewritten": "कल सुबह मैं कॉलेज जल्दी उठ गया क्योंकि पहला lecture आठ बजे था, लेकिन वहाँ पहुंच कर पता चला कि प्रोफेसर ने क्लास को रद्द कर दिया है, इसलिए मैं पुस्तकालय में अपने प्रोजेक्ट पर काम करने के लिए चला गया, फिर दोपहर को दोस्तों के साथ कैफेटेरिया में खाना खाया और शाम को घर वापस आ गया।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_044",
+        "register": "neutral",
+        "rewritten": "देखो, हम सभी इस सप्ताहांत गोवा जा रहे हैं, तो तुम अपनी leave approve करवा कर और tickets जल्दी बुक कर लेना क्योंकि बाद में उड़ानें बहुत महंगी हो जाती हैं और होटल भी नहीं मिलता, बाकी विवरण मैं रात को WhatsApp पर दे दूँगा।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_045",
+        "register": "neutral",
+        "rewritten": "मेरे दादाजी हर सुबह 5 बजे उठते हैं और एक घंटे तक पास के पार्क में टहलते हैं। फिर वे अदरक वाली चाय पीते हैं और अखबार पढ़ते हैं। उनका कहना है कि अगर आप अपनी दिनचर्या ठीक रखते हैं, तो आपको डॉक्टर के पास जाने की ज़रूरत नहीं है।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_046",
+        "register": "neutral",
+        "rewritten": "नमस्ते, मैं आपको बताना चाहता हूं कि कल रात मेरे घर के पास बिजली चली गई थी और इंटरनेट भी काम नहीं कर रहा था, इसलिए मैं अपना असाइनमेंट समय पर जमा नहीं कर सका, क्या आप मुझे दो दिन का विस्तार दे सकते हैं, मैं वादा करता हूं कि ऐसा फिर नहीं होगा।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_047",
+        "register": "neutral",
+        "rewritten": "मुझे कल जाना है।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_048",
+        "register": "neutral",
+        "rewritten": "आज बहुत गर्मी है।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_049",
+        "register": "neutral",
+        "rewritten": "क्या आप मेरी मदद कर सकते हैं?",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_050",
+        "register": "neutral",
+        "rewritten": "मेरा नाम Rohit है।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_001",
+        "register": "formal",
+        "rewritten": "आज मौसम बहुत अच्छा है।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_002",
+        "register": "formal",
+        "rewritten": "आप घर कब लौटेंगे?",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_003",
+        "register": "formal",
+        "rewritten": "मुझे थोड़ा पानी चाहिए।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_004",
+        "register": "formal",
+        "rewritten": "हम शाम को मिलेंगे।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_005",
+        "register": "formal",
+        "rewritten": "क्या आपने अपना भोजन खा लिया है?",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_006",
+        "register": "formal",
+        "rewritten": "मैंने किताब मेज़ पर रख दी है।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_007",
+        "register": "formal",
+        "rewritten": "कृपया यह काम कल तक पूरा कर दें।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_008",
+        "register": "formal",
+        "rewritten": "उन्होंने मुझे सच बताया।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_009",
+        "register": "formal",
+        "rewritten": "बच्चे बाहर खेल रहे हैं।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_010",
+        "register": "formal",
+        "rewritten": "मेरी माँ ने आज खीर बनाई।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_011",
+        "register": "formal",
+        "rewritten": "मुझे कल कार्यालय जाना है।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_012",
+        "register": "formal",
+        "rewritten": "कृपया कल के बैठक के लिए Rohit को सूचित करें।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_013",
+        "register": "formal",
+        "rewritten": "मेरा मोबाइल चार्ज नहीं हो रहा है।",
+        "judge_meaning": 3,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_014",
+        "register": "formal",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_015",
+        "register": "formal",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_016",
+        "register": "formal",
+        "rewritten": "लैपटॉप की बैटरी जल्दी खत्म हो जाती है।",
+        "judge_meaning": 4,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_017",
+        "register": "formal",
+        "rewritten": "मुझे कल बैंक जाना है।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_018",
+        "register": "formal",
+        "rewritten": "उसका मोटरसाइकिल खराब हो गया।",
+        "judge_meaning": 3,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_019",
+        "register": "formal",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_020",
+        "register": "formal",
+        "rewritten": "हॉस्टल का भोजन काफी अच्छा नहीं है।",
+        "judge_meaning": 3,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_021",
+        "register": "formal",
+        "rewritten": "प्रिया और मैं कल दिल्ली जा रहे हैं।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_022",
+        "register": "formal",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_023",
+        "register": "formal",
+        "rewritten": "हमने Amazon से एक नया फोन मंगवाया।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_024",
+        "register": "formal",
+        "rewritten": "बंगालुरू में आज बारिश हो रही है।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_025",
+        "register": "formal",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_026",
+        "register": "formal",
+        "rewritten": "आशा दीदी कल आ रही हैं।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_027",
+        "register": "formal",
+        "rewritten": "क्या आप शर्मा सर को ईमेल कर चुके हैं?",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_028",
+        "register": "formal",
+        "rewritten": null,
+        "rejected": "rewrite rejected: length ratio 1.81 outside 0.5–1.6"
+      },
+      {
+        "case": "cm_029",
+        "register": "formal",
+        "rewritten": null,
+        "rejected": "rewrite rejected: length ratio 1.68 outside 0.5–1.6"
+      },
+      {
+        "case": "cm_030",
+        "register": "formal",
+        "rewritten": "इस बार मैं भी उपस्थित होऊंगा।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_031",
+        "register": "formal",
+        "rewritten": "घर में कोई नहीं है।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_032",
+        "register": "formal",
+        "rewritten": "हम कल ही निकल गए थे।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_033",
+        "register": "formal",
+        "rewritten": "इस किताब में कई कहानियां हैं।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_034",
+        "register": "formal",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_035",
+        "register": "formal",
+        "rewritten": "मैं बैंक के पास खड़ा हूँ।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_036",
+        "register": "formal",
+        "rewritten": "बधाई हो, टीम ने जीत हासिल की।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_037",
+        "register": "formal",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_038",
+        "register": "formal",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_039",
+        "register": "formal",
+        "rewritten": null,
+        "rejected": "rewrite rejected: script changed from Roman"
+      },
+      {
+        "case": "cm_040",
+        "register": "formal",
+        "rewritten": "मैंने फॉर्म सबमिट कर दिया है।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_041",
+        "register": "formal",
+        "rewritten": "कल तक सब कुछ समायोजित हो जाएगा।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_042",
+        "register": "formal",
+        "rewritten": "उसने मेरा संदेश अनदेखा कर दिया।",
+        "judge_meaning": 4,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_043",
+        "register": "formal",
+        "rewritten": "कल सुबह मैं कॉलेज जाने के लिए जल्दी उठ गया था क्योंकि पहला व्याख्यान आठ बजे था, लेकिन जब मैं वहाँ पहुँचा तो पता चला कि प्रोफेसर ने कक्षा को रद्द कर दिया है, इसलिए मैंने पुस्तकालय की ओर रुख किया और दो घंटे तक अपने परियोजना पर काम किया, फिर दोपहर में दोस्तों के साथ कैफेटेरिया में खाना खाया और शाम को घर लौट गया।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_044",
+        "register": "formal",
+        "rewritten": "कृपया इस सप्ताहांत के लिए हम सब Goa जाने का योजना बना रहे हैं। क्या आप अपनी leave को अनुमोदित कर सकते हैं और टिकट जल्द से जल्द बुक कर सकते हैं, क्योंकि उड़ान बाद में महंगी हो जाती है और होटल भी नहीं मिलता। बाकी जानकारी मैं आपको रात को WhatsApp पर भेज दूंगा।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_045",
+        "register": "formal",
+        "rewritten": "मेरे दादाजी हर सुबह पाँच बजे उठते हैं और एक घंटे तक पास के पार्क में टहलते हैं। फिर, वे अदरक वाली चाय का एक कप पीते हैं और अखबार पढ़ते हैं। उनका मानना है कि अगर कोई अपनी दैनिक दिनचर्या को सही तरीके से बनाए रखता है, तो उसे डॉक्टर के पास जाने की आवश्यकता नहीं होती।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_046",
+        "register": "formal",
+        "rewritten": "प्रभु, मैं आपको बताना चाहता हूं कि कल रात मेरे घर के पास बिजली चली गई थी और इंटरनेट भी काम नहीं कर रहा था, इसलिए मैं कार्य समय पर जमा नहीं कर पाया, क्या आप मुझे दो दिन का विस्तार दे सकते हैं, मैं वादा करता हूं कि भविष्य में ऐसा नहीं होगा।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_047",
+        "register": "formal",
+        "rewritten": "मुझे कल जाना है।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_048",
+        "register": "formal",
+        "rewritten": "आज काफी गर्मी है।",
+        "judge_meaning": 4,
+        "judge_register": 4,
+        "judge_fluency": 4,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_049",
+        "register": "formal",
+        "rewritten": "क्या आप मेरी मदद कर सकते हैं?",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      },
+      {
+        "case": "cm_050",
+        "register": "formal",
+        "rewritten": "मेरा नाम रोहित है।",
+        "judge_meaning": 5,
+        "judge_register": 5,
+        "judge_fluency": 5,
+        "judge_parsed": true
+      }
+    ],
+    "judge_meaning_overall": 4.2844827586206895
+  },
+  "translate": {
+    "available": true,
+    "n": 50,
+    "chrf_pp": 75.0,
+    "bleu": 53.0,
+    "e2e_note": "end-to-end translations are scored per case in the CSV"
+  },
+  "ablation_translit_sentence": {
+    "n": 50,
+    "translit_sentence": {
+      "sentence_exact": 11,
+      "sentence_exact_lenient": 11,
+      "cer": 0.2342803912435957,
+      "tokens_all": {
+        "correct": 378,
+        "n": 496
+      },
+      "tokens_hindi": {
+        "correct": 340,
+        "n": 380
+      },
+      "tokens_english": {
+        "correct": 0,
+        "n": 64
+      },
+      "tokens_named_entity": {
+        "correct": 0,
+        "n": 14
+      }
+    },
+    "pipeline": {
+      "sentence_exact": 35,
+      "sentence_exact_lenient": 37,
+      "cer": 0.02887750349324639,
+      "tokens_all": {
+        "correct": 467,
+        "n": 496
+      },
+      "tokens_hindi": {
+        "correct": 354,
+        "n": 380
+      },
+      "tokens_english": {
+        "correct": 64,
+        "n": 64
+      },
+      "tokens_named_entity": {
+        "correct": 11,
+        "n": 14
+      }
+    }
+  },
+  "end_to_end": {
+    "n": 50,
+    "register": "neutral",
+    "passed": 19,
+    "route_ok": 50,
+    "native_ok": 35,
+    "native_ok_lenient": 37,
+    "native_cer": 0.02887750349324639,
+    "rewrite_ok": 33,
+    "translation_evaluated": 50,
+    "translation_ok": 43,
+    "by_category": {
+      "plain": {
+        "n": 10,
+        "native_ok": 6,
+        "passed": 5
+      },
+      "loanword": {
+        "n": 10,
+        "native_ok": 9,
+        "passed": 3
+      },
+      "named_entity": {
+        "n": 8,
+        "native_ok": 5,
+        "passed": 2
+      },
+      "ambiguous": {
+        "n": 8,
+        "native_ok": 6,
+        "passed": 4
+      },
+      "hinglish_verb": {
+        "n": 6,
+        "native_ok": 5,
+        "passed": 1
+      },
+      "long": {
+        "n": 4,
+        "native_ok": 0,
+        "passed": 0
+      },
+      "already_devanagari": {
+        "n": 4,
+        "native_ok": 4,
+        "passed": 4
+      }
+    },
+    "failures_primary": {
+      "F1": 0,
+      "F2": 2,
+      "F3": 0,
+      "F4": 0,
+      "F5": 0,
+      "F6": 3,
+      "F7": 3,
+      "F8": 5,
+      "F9": 0,
+      "F10": 14,
+      "F11": 2,
+      "F12": 0,
+      "other": 2
+    },
+    "failures_any": {
+      "F1": 0,
+      "F2": 2,
+      "F3": 0,
+      "F4": 0,
+      "F5": 0,
+      "F6": 5,
+      "F7": 3,
+      "F8": 13,
+      "F9": 0,
+      "F10": 17,
+      "F11": 7,
+      "F12": 0,
+      "other": 6
+    },
+    "translation": {
+      "n": 50,
+      "chrf_pp": 70.0,
+      "bleu": 47.0
+    }
+  },
+  "latency": {
+    "e2e_per_stage": {
+      "route": {
+        "n": 50,
+        "p50_ms": 3443.7,
+        "p95_ms": 6749.7
+      },
+      "tokenize": {
+        "n": 50,
+        "p50_ms": 0.2,
+        "p95_ms": 2.0
+      },
+      "transliterate": {
+        "n": 46,
+        "p50_ms": 0.1,
+        "p95_ms": 2.2
+      },
+      "rerank": {
+        "n": 46,
+        "p50_ms": 2.8,
+        "p95_ms": 15.6
+      },
+      "rewrite": {
+        "n": 50,
+        "p50_ms": 2759.4,
+        "p95_ms": 9989.1
+      },
+      "total": {
+        "n": 50,
+        "p50_ms": 6625.9,
+        "p95_ms": 16240.4
+      },
+      "translate": {
+        "n": 49,
+        "p50_ms": 374.8,
+        "p95_ms": 2426.5
+      }
+    },
+    "runs_s": {
+      "transliterate_50_words_rescore_on_s": 2.47,
+      "transliterate_50_words_rescore_off_s": 1.92,
+      "tokenize_test_llm_off_s": 10.37,
+      "tokenize_test_llm_on_s": 0.03,
+      "route_30_cases_llm_on_s": 90.96,
+      "route_30_cases_llm_off_s": 0.01,
+      "rewrite_gold_all_registers_s": 950.34
+    }
+  },
+  "prd_targets": [
+    {
+      "criterion": "transliteration top-1 (Aksharantar)",
+      "value": 0.58,
+      "target": ">= 0.7",
+      "met": false
+    },
+    {
+      "criterion": "transliteration top-5 (Aksharantar)",
+      "value": 0.78,
+      "target": ">= 0.9",
+      "met": false
+    },
+    {
+      "criterion": "transliteration CER (Aksharantar)",
+      "value": 0.09480122324159021,
+      "target": "<= 0.15",
+      "met": true
+    },
+    {
+      "criterion": "token classification macro-F1 (HINDI/ENGLISH/NE)",
+      "value": 0.9439506417759437,
+      "target": ">= 0.85",
+      "met": true
+    },
+    {
+      "criterion": "router accuracy",
+      "value": 1.0,
+      "target": ">= 0.9",
+      "met": true
+    },
+    {
+      "criterion": "rewrite meaning (LLM judge, 1-5)",
+      "value": 4.2844827586206895,
+      "target": ">= 4.0",
+      "met": true
+    },
+    {
+      "criterion": "translation chrF++",
+      "value": 75.0,
+      "target": ">= 45.0",
+      "met": true
+    },
+    {
+      "criterion": "hand-built code-mixed cases",
+      "value": 50,
+      "target": ">= 50",
+      "met": true
+    }
+  ]
+}

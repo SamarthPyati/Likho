@@ -1,0 +1,8 @@
+measure,translit_sentence baseline,Likho pipeline
+sentences exactly right,11/50 (22.0%),35/50 (70.0%)
+sentences right (lenient),11/50 (22.0%),37/50 (74.0%)
+character error rate,0.234,0.029
+tokens right: all,378/496 (76.2%),467/496 (94.2%)
+tokens right: hindi,340/380 (89.5%),354/380 (93.2%)
+tokens right: english,0/64 (0.0%),64/64 (100.0%)
+tokens right: named_entity,0/14 (0.0%),11/14 (78.6%)

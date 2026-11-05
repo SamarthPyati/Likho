@@ -52,6 +52,7 @@ make dev            # Gradio app on :7860, talks to local API
 make api            # FastAPI on :8000
 make test           # pytest, runs with MOCK_MODELS=1
 make eval           # full evaluation, writes eval/results/<timestamp>.json
+make results RUN=<id>  # build results/ (tables, CSVs, examples) from one run
 make lint           # ruff + black --check
 ```
 

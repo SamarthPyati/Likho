@@ -1,0 +1,8 @@
+kind,precision (LLM tie-break on),recall (on),F1 (on),support,F1 (LLM tie-break off)
+hindi,99.2%,98.7%,98.9%,380,98.9%
+english,92.8%,100.0%,96.2%,64,96.2%
+named_entity,100.0%,78.6%,88.0%,14,88.0%
+devanagari,100.0%,100.0%,100.0%,18,100.0%
+punct,100.0%,100.0%,100.0%,20,100.0%
+**accuracy (all tokens)**,,,98.4%,496,98.4%
+"**macro-F1 (hindi, english, NE)**",,,94.4%,,94.4%

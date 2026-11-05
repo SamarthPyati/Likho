@@ -1,0 +1,8 @@
+stage,requests,p50 ms,p95 ms
+route,50,3444,6750
+tokenize,50,0,2
+transliterate,46,0,2
+rerank,46,3,16
+rewrite,50,2759,9989
+translate,49,375,2426
+total,50,6626,16240

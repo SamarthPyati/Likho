@@ -1,0 +1,6 @@
+subset,n,top-1 rescore on,top-5 rescore on,CER rescore on,top-1 rescore off,top-5 rescore off,CER rescore off
+overall,50,58.0%,78.0%,0.095,46.0%,78.0%,0.128
+ak_freq,13,69.2%,84.6%,0.086,46.2%,84.6%,0.129
+ak_nef,13,46.2%,84.6%,0.137,46.2%,84.6%,0.137
+ak_nei,12,58.3%,58.3%,0.082,50.0%,58.3%,0.137
+dakshina,12,58.3%,83.3%,0.077,41.7%,83.3%,0.108

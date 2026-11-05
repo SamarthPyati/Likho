@@ -1,0 +1,6 @@
+gold \ predicted,hindi,english,named_entity,devanagari,punct,numeric
+hindi,375,5,0,0,0,0
+english,0,64,0,0,0,0
+named_entity,3,0,11,0,0,0
+devanagari,0,0,0,18,0,0
+punct,0,0,0,0,20,0

@@ -1,0 +1,55 @@
+# Router test set — docs/EVALUATION.md §1.3. 30 inputs with the intent the router
+# should pick; the expected stage list is `likho.router.STAGES[intent]`.
+# Exact-match accuracy is computed on the stage list.
+#
+# Intents: roman_hinglish, mixed_script, devanagari, english, empty.
+# English-only Roman text is the hard boundary: single words and short
+# phrases where Hindi and English readings collide (to, me, main) are in
+# here deliberately.
+#
+# Annotation status: DRAFT, single annotator (AI-assisted, 2026-10-31).
+annotation:
+  annotator_a: "AI-assisted draft"
+  annotator_b: null
+  disagreements: null
+
+cases:
+  # ---- roman_hinglish (10)
+  - {id: rt_01, input: "kal milte hain", expected_intent: roman_hinglish}
+  - {id: rt_02, input: "mujhe kal office jana hai", expected_intent: roman_hinglish}
+  - {id: rt_03, input: "yaar kya scene hai aaj", expected_intent: roman_hinglish}
+  - {id: rt_04, input: "please mujhe notes bhej do", expected_intent: roman_hinglish}
+  - {id: rt_05, input: "acha", expected_intent: roman_hinglish}
+  - {id: rt_06, input: "theek hai", expected_intent: roman_hinglish}
+  - {id: rt_07, input: "Rohit ko bol dena ki meeting cancel ho gayi", expected_intent: roman_hinglish}
+  - {id: rt_08, input: "main to ghar pe hi hoon", expected_intent: roman_hinglish}
+  - {id: rt_09, input: "file update kar do please", expected_intent: roman_hinglish}
+  - {id: rt_10, input: "kya tum 5 baje aa sakte ho?", expected_intent: roman_hinglish}
+
+  # ---- english (6)
+  - {id: rt_11, input: "please call me when you reach", expected_intent: english}
+  - {id: rt_12, input: "The meeting has been moved to Friday.", expected_intent: english}
+  - {id: rt_13, input: "thanks", expected_intent: english}
+  - {id: rt_14, input: "Can you send me the report by 5 pm?", expected_intent: english}
+  - {id: rt_15, input: "I am on my way", expected_intent: english}
+  - {id: rt_16, input: "main road is blocked", expected_intent: english}
+
+  # ---- devanagari (6)
+  - {id: rt_17, input: "मुझे कल जाना है", expected_intent: devanagari}
+  - {id: rt_18, input: "आज बहुत गर्मी है।", expected_intent: devanagari}
+  - {id: rt_19, input: "धन्यवाद", expected_intent: devanagari}
+  - {id: rt_20, input: "क्या आप मेरी मदद कर सकते हैं?", expected_intent: devanagari}
+  - {id: rt_21, input: "मैं ५ बजे आऊंगा", expected_intent: devanagari}
+  - {id: rt_22, input: "ठीक है, कल मिलते हैं।", expected_intent: devanagari}
+
+  # ---- mixed_script (4)
+  - {id: rt_23, input: "मुझे kal जाना है", expected_intent: mixed_script}
+  - {id: rt_24, input: "मेरा नाम Rohit है", expected_intent: mixed_script}
+  - {id: rt_25, input: "आज meeting है, jaldi aana", expected_intent: mixed_script}
+  - {id: rt_26, input: "ok धन्यवाद", expected_intent: mixed_script}
+
+  # ---- empty (4)
+  - {id: rt_27, input: "", expected_intent: empty}
+  - {id: rt_28, input: "   ", expected_intent: empty}
+  - {id: rt_29, input: "12345", expected_intent: empty}
+  - {id: rt_30, input: "?!", expected_intent: empty}

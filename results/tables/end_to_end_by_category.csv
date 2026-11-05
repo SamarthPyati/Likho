@@ -1,0 +1,8 @@
+category,n,native script right,passed every stage
+plain,10,6/10 (60.0%),5/10 (50.0%)
+loanword,10,9/10 (90.0%),3/10 (30.0%)
+named_entity,8,5/8 (62.5%),2/8 (25.0%)
+ambiguous,8,6/8 (75.0%),4/8 (50.0%)
+hinglish_verb,6,5/6 (83.3%),1/6 (16.7%)
+long,4,0/4 (0.0%),0/4 (0.0%)
+already_devanagari,4,4/4 (100.0%),4/4 (100.0%)

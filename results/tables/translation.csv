@@ -1,0 +1,3 @@
+input,n,chrF++,BLEU
+gold Devanagari,50,75.0,53.0
+end to end,50,70.0,47.0

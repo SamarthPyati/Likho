@@ -239,8 +239,24 @@ reruns and diffs against the committed file, ignoring `meta` and `latency`
 Decoding is greedy except the rewrite, whose sampling is reseeded per call
 (`LLM_SEED`), so results are deterministic on the same hardware and software.
 
-**End to end.** Each test case runs through `likho.pipeline.assist` with
-register `neutral` and translation on, exactly as the API would. A case
+**End to end.** Each test case runs through the pipeline with register
+`neutral` and translation on, in two passes: `assist_untranslated` and the
+rewrite judge for every case (Param-1), then Param-1 is released and
+`add_translation` runs for every case (IndicTrans2). `assist` is exactly these
+two functions back to back, so outputs equal the API's; the split keeps one
+large model in memory at a time, without which a 16 GB machine swapped
+(~15 min per case). Models load before timing starts.
+
+**Checkpoints.** A full run saves each finished phase to
+`eval/results/<run>_checkpoint.tmp` (gitignored) and deletes it on success;
+rerunning the same `--run-id` after a crash skips the saved phases and lists
+them in `meta.resumed_phases`.
+
+**Results for the report.** `python -m eval.export_results <run>` (or
+`make results RUN=<run>`) builds the top-level `results/` folder from one run:
+a README with every table, one CSV per table, example outputs, the raw files
+with checksums, and the test sets. Nothing in it is typed by hand except
+`results/FAILURE_ANALYSIS.md`, which re-exports keep. A case
 passes when the route is right, the native script matches `expected_native`
 exactly (after NFC), the judge gives the rewrite meaning ≥ 4, and the
 translation's sentence chrF++ is ≥ 45. A translation the model could not

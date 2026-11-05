@@ -107,7 +107,7 @@ response is covered by a test and does not crash the pipeline.
 - [x] Route explanation shown (U6)
 - [x] `DISABLE_STAGES=rewrite` switches a stage off; it is reported as an error
 - [x] Verified on real IndicXlit + Param-1 (Apple M4): example sentence, all registers
-- [ ] Verified on real IndicTrans2 — blocked until the HF terms are accepted
+- [x] Verified on real IndicTrans2 (1B, Apple M4): full evaluation run `20261105-m4`
 
 **Accept when:** `make api && make dev`, paste
 `"kal ke meeting ke liye Rohit ko bata dena"`, get Devanagari with `meeting`
@@ -119,12 +119,17 @@ returns the transliteration.
 
 ## M6 — Full evaluation and failure analysis
 
-- [ ] `eval/run_eval.py` runs every stage and writes both output files
-- [ ] All four ablations from `docs/EVALUATION.md` §5
-- [ ] Every failing case classified F1–F12 in the CSV
-- [ ] `docs/FAILURE_ANALYSIS.md` — counts per bucket, 2–3 worked examples each,
+- [x] `eval/run_eval.py` runs every stage and writes both output files
+- [x] All four ablations from `docs/EVALUATION.md` §5
+- [x] Every failing case classified F1–F12 in the CSV
+- [x] `results/FAILURE_ANALYSIS.md` — counts per bucket, 2–3 worked examples each,
       and what you would do about the top three
-- [ ] A committed run in `eval/results/` that the report cites by name
+- [x] A committed run in `eval/results/` that the report cites by name:
+      `20261105-m4`, exported for the report to `results/` (`make results RUN=…`)
+- [x] Reproduced: a rerun from the clean commit `4553cc6` with `--compare` was
+      identical (the run itself records `576027c-dirty`, i.e. the same code
+      before it was committed); in the cases CSV only `total_ms` differs
+- [ ] Human rubric scored by two raters (`results/human_rubric.csv`)
 
 **Accept when:** `make eval` reproduces the committed JSON on the same
 hardware, and the failure analysis cites specific case IDs.

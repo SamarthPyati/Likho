@@ -1,0 +1,12 @@
+measure,value
+Hindi tokens in test sentences,380
+"top-1 accuracy, rerank off",89.7%
+"top-1 accuracy, rerank on",93.4%
+"top-1 accuracy (lenient), rerank off",91.1%
+"top-1 accuracy (lenient), rerank on",95.3%
+ceiling: gold anywhere in top-k,96.8%
+tokens fixed by rerank,16
+tokens broken by rerank,2
+gold in top-k but not chosen (F8),13
+gold not in top-k at all,12
+Aksharantar words (n=50) top-1 off → on,58.0% → 58.0%

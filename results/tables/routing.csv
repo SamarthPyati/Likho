@@ -1,0 +1,7 @@
+measure,LLM router on,rules only
+cases,30,30
+final stage-plan accuracy,100.0%,100.0%
+LLM proposal accuracy,46.7%,—
+LLM output unparseable,13.3%,—
+rules decided (fallback rate),53.3%,100.0%
+routing errors,0,0

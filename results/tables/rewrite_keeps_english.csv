@@ -1,0 +1,5 @@
+measure,value
+accepted rewrites of sentences with English words or names,19
+rewrites that changed at least one of them,19/19 (100.0%)
+…of which the case still passed every stage,6
+"English words and names kept, overall",7/50 (14.0%)

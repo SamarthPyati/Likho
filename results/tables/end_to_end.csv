@@ -1,0 +1,9 @@
+measure,cases
+passed every stage,19/50 (38.0%)
+route correct,50/50 (100.0%)
+native script exactly right,35/50 (70.0%)
+native script right (lenient),37/50 (74.0%)
+native script CER,0.029
+rewrite accepted and meaning kept,33/50 (66.0%)
+translation evaluated,50/50 (100.0%)
+translation chrF++ ≥ 45,43/50 (86.0%)

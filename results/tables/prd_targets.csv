@@ -1,0 +1,9 @@
+criterion,value,target,met
+transliteration top-1 (Aksharantar),0.580,>= 0.7,**no**
+transliteration top-5 (Aksharantar),0.780,>= 0.9,**no**
+transliteration CER (Aksharantar),0.095,<= 0.15,yes
+token classification macro-F1 (HINDI/ENGLISH/NE),0.944,>= 0.85,yes
+router accuracy,1.000,>= 0.9,yes
+"rewrite meaning (LLM judge, 1-5)",4.284,>= 4.0,yes
+translation chrF++,75.000,>= 45.0,yes
+hand-built code-mixed cases,50,>= 50,yes
