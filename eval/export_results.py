@@ -482,6 +482,11 @@ def readme(run_id: str, m: dict, tables: list[Table], files: dict[str, Path]) ->
         "for each; it writes `eval/results/<run>_human.json` with means, inter-rater "
         "agreement and the judge-vs-human gap. Re-run this export afterwards."
     )
+    machine = f"{hw['platform']}, Python {hw['python']}"
+    if "torch" in hw:  # absent when only the core (mock) dependencies are installed
+        machine += f", torch {hw['torch']}"
+    if "gpu" in hw:
+        machine += f", {hw['gpu']}"
     settings_line = (
         f"LLM router {settings['llm_router']}, LLM tie-break {settings['llm_tiebreak']}, "
         f"seed {settings['llm_seed']}, end-to-end register {settings['e2e_register']}"
@@ -511,7 +516,7 @@ by failure type, with worked examples and fixes.
 | date (UTC) | {meta['date_utc']} |
 | code version | `{meta['git_commit']}` |
 | real models | {'no — MOCK RUN, numbers are meaningless' if meta['mock_models'] else 'yes'} |
-| machine | {hw['platform']}, Python {hw['python']}, torch {hw['torch']} |
+| machine | {machine} |
 | LLM device | {hw['llm_device']} |
 | transliteration | IndicXlit (`ai4bharat-transliteration`), top-5 |
 | rewrite / router / judge LLM | `{models['llm']}` |

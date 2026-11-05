@@ -60,3 +60,16 @@ def test_reexport_keeps_the_written_failure_analysis(exported):
 def test_missing_run_is_a_clear_error(tmp_path):
     with pytest.raises(FileNotFoundError, match="no run"):
         export("nope", out=tmp_path / "r", results=tmp_path, human=tmp_path)
+
+
+def test_run_without_torch_exports(exported, tmp_path):
+    """A core-only install (MOCK_MODELS=1, no torch) records no torch version."""
+    _, _, raw = exported
+    for f in raw.iterdir():
+        (tmp_path / f.name).write_bytes(f.read_bytes())
+    metrics_path = tmp_path / "unit_metrics.json"
+    metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
+    metrics["meta"]["hardware"].pop("torch", None)
+    metrics_path.write_text(json.dumps(metrics), encoding="utf-8")
+    out = export("unit", out=tmp_path / "results", results=tmp_path, human=tmp_path)
+    assert "torch" not in (out / "README.md").read_text(encoding="utf-8").split("| machine |")[1]
