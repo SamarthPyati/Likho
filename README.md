@@ -14,8 +14,8 @@ the first should become Devanagari. Likho tags every word, transliterates only
 the Hindi ones, lets you pick another spelling for any word, and explains how
 it routed your text.
 
-CS3235 (Working with LLMs) mini-project, RV University. Academic,
-non-commercial use.
+CS3235 (Working with LLMs) mini-project, RV University. Code under the MIT
+licence; the LLM it uses is licensed for research use only (see *Licences*).
 
 ![The Write tab: input, tone, word tags, Devanagari, rewrite and English](docs/images/write.png)
 
@@ -63,7 +63,7 @@ Requires Python 3.10. [`uv`](https://github.com/astral-sh/uv) is recommended
 (it installs Python 3.10 itself); without it, `python3.10` must be on `PATH`.
 
 ```bash
-git clone <this repo> && cd likho
+git clone https://github.com/SamarthPyati/Likho.git && cd Likho
 make setup          # .venv + pinned core dependencies — enough for the mock mode
 ```
 
@@ -148,14 +148,15 @@ Contributor rules are in [`CLAUDE.md`](CLAUDE.md).
 
 | Component | Licence |
 |---|---|
-| This project's code | Academic coursework; non-commercial use |
+| This project's code | MIT — see [`LICENSE`](LICENSE) |
 | IndicXlit (`ai4bharat-transliteration`) | MIT |
 | IndicTrans2 indic-en 1B | MIT (gated on Hugging Face) |
 | Param-1 2.9B Instruct | Model card: Apache-2.0 (metadata) / MIT (text); research use only |
 
-See [`docs/MODELS.md`](docs/MODELS.md) §1 for the licence notes. Param-1's card
-restricts it to research and experimentation, so do not deploy Likho as a
-public product.
+The MIT licence covers this repository's code only; each model keeps its own
+terms. See [`docs/MODELS.md`](docs/MODELS.md) §1 for the licence notes.
+Param-1's card restricts it to research and experimentation, so do not deploy
+Likho as a public product.
 
 ## Team
 
