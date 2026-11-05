@@ -4,9 +4,15 @@ Every structure that crosses a module boundary is defined here. Change these
 only by agreement — every stage depends on them.
 """
 
+import warnings
 from enum import Enum
 
 from pydantic import BaseModel, Field
+
+# `register` is the API's field name for the tone (PRD U3). Pydantic warns that
+# it shadows the `register` method BaseModel inherits from ABCMeta; nothing here
+# calls that method, so the field is safe and renaming it would break clients.
+warnings.filterwarnings("ignore", message='Field name "register"', category=UserWarning)
 
 
 class TokenKind(str, Enum):

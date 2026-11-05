@@ -84,13 +84,13 @@ def test_clicking_hindi_word_offers_candidates():
     _, owners = ui.highlights(TEXT, TOKENS)
     selected, update = ui.pick_word(response(), owners, Click(0))
     assert selected == 0
-    assert update["choices"] == ["कल", "काल"] and update["visible"] is True
+    assert update["choices"] == ["कल", "काल"] and "kal" in update["label"]
 
 
 def test_clicking_word_without_candidates_hides_alternatives():
     _, owners = ui.highlights(TEXT, TOKENS)
     selected, update = ui.pick_word(response(), owners, Click(4))  # "meeting"
-    assert selected is None and update["visible"] is False
+    assert selected is None and update["choices"] == []
 
 
 def test_choosing_alternative_rerenders_native_script():

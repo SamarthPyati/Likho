@@ -9,14 +9,17 @@ and checkpoints do move.
 | Role | Model | Size | Licence |
 |---|---|---|---|
 | Transliteration | IndicXlit via `ai4bharat-transliteration` | ~11M | MIT (code + model) |
-| Rewrite + router | `bharatgenai/Param-1-2.9B-Instruct` | 2.9B | **Unresolved** — see note |
+| Rewrite + router | `bharatgenai/Param-1-2.9B-Instruct` | 2.9B | Apache-2.0 / MIT (card), research use — see note |
 | Translation | `ai4bharat/indictrans2-indic-en-1B` | 1.1B | MIT, gated |
 
-**Licence note.** As of October 2026 the Param-1 model card says apache-2.0
-in its metadata and MIT in its text; this document originally said
-"BharatGen non-commercial". Read the repo's LICENSE file and settle it before
-the README states a licence. Either way the card calls it an early research
-checkpoint not for production, so do not deploy it publicly as a product.
+**Licence note (checked 2026-11-05).** The Param-1 model card says
+`license: apache-2.0` in its metadata and "License: MIT" in its text. The
+LICENSE file the card links to does not exist in the repo (404), so the card is
+the only statement. Both are permissive; the card also says the release is
+"provided exclusively for research, experimentation and contribution to the
+open source community" and must not be deployed in production. This project is
+academic research use, which fits; do not deploy it publicly as a product.
+(This document originally said "BharatGen non-commercial"; that was wrong.)
 
 **Gated.** Both IndicTrans2 repos require logging in and accepting their
 terms on Hugging Face; each team member does this once and sets `HF_TOKEN`.

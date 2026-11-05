@@ -79,8 +79,9 @@ offline and writes a metrics JSON plus a per-case CSV.
 - **NFR3** — Models load once at process start, never per request.
 - **NFR4** — No user text is persisted. Logs record lengths and timings, not
   content.
-- **NFR5** — All model licences recorded in `docs/MODELS.md`. Param-1's SFT
-  checkpoint is non-commercial; this project is academic and stays that way.
+- **NFR5** — All model licences recorded in `docs/MODELS.md`. Param-1's card
+  gives a permissive licence but restricts the release to research use; this
+  project is academic and stays that way.
 
 ## 6. Out of scope
 

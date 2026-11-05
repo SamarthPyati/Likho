@@ -138,14 +138,20 @@ hardware, and the failure analysis cites specific case IDs.
 
 ## M7 — Delivery
 
-- [ ] `README.md` — what it is, a screenshot, install, run, results table
-      quoting the named eval run, licences, team, course
-- [ ] Demo recording, 3–5 minutes: problem, live demo, architecture, results,
-      one honest failure
-- [ ] `docs/REPORT.md` or the lab-format document
-- [ ] Repo public, clean history, no weights, no tokens
-- [ ] `pip install -r requirements.txt && make dev` verified on a machine
-      that has never seen the project
+- [x] `README.md` — what it is, screenshots, install, run, results table
+      quoting run `20261105-m4`, licences, course
+- [ ] README: the other team members' names
+- [x] Browser click test of the word alternatives (U2), real models, headless
+      Chrome — found and fixed a hidden Radio that never appeared (Gradio 6.17)
+- [ ] Demo recording, 3–5 minutes — script ready in `docs/DEMO_SCRIPT.md`;
+      record, upload, link from the README
+- [x] `docs/REPORT.md` — full draft; *(team)* sections: contributions, human
+      rubric results, citation format
+- [ ] Repo public — history checked clean (no weights, `.env` or tokens);
+      making it public is the team's call
+- [~] Fresh install: a fresh clone + `make setup` + `make test` + mock app
+      verified on the dev machine; still to do on a machine that has never
+      seen the project
 
 **Accept when:** a teammate clones the repo on a fresh machine and has it
 running from the README alone, without asking anyone a question.

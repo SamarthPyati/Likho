@@ -176,8 +176,19 @@ def submit(text: str, register: str, translate: bool, loanwords: bool):  # noqa:
         entries,
         route_markdown(resp),
         errors_markdown(resp),
-        gr.update(choices=[], value=None, visible=False),
+        no_alternatives(),
     )
+
+
+ALTERNATIVES_LABEL = "Alternatives"
+ALTERNATIVES_HINT = "Click a Hindi word above to see its other spellings."
+
+
+def no_alternatives():  # noqa: ANN201
+    """The alternatives list, emptied. It is always shown rather than hidden: in
+    Gradio 6.17 a Radio created with visible=False did not appear when an update
+    set visible=True (found in a browser test; the callback itself was fine)."""
+    return gr.update(choices=[], value=None, label=ALTERNATIVES_LABEL, info=ALTERNATIVES_HINT)
 
 
 def pick_word(resp: Response, owners: list[int], evt: gr.SelectData):  # noqa: ANN201
@@ -185,13 +196,13 @@ def pick_word(resp: Response, owners: list[int], evt: gr.SelectData):  # noqa: A
     token_index = owners[evt.index] if resp and evt.index < len(owners) else -1
     candidates = resp["tokens"][token_index]["candidates"] if token_index >= 0 else []
     if not candidates:
-        return None, gr.update(choices=[], value=None, visible=False)
+        return None, no_alternatives()
     token = resp["tokens"][token_index]
     return token_index, gr.update(
         choices=candidates,
         value=token["chosen"],
         label=f"Alternatives for “{token['surface']}”",
-        visible=True,
+        info="Pick one to change the Devanagari, then click Update rewrite.",
     )
 
 
@@ -350,7 +361,7 @@ def build_write_tab():  # noqa: ANN201
         combine_adjacent=False,
         show_legend=True,
     )
-    alternatives = gr.Radio([], label="Alternatives", visible=False)
+    alternatives = gr.Radio([], label=ALTERNATIVES_LABEL, info=ALTERNATIVES_HINT)
     with gr.Row():
         native = gr.Textbox(label="Devanagari", lines=3, buttons=["copy"])
         rewritten = gr.Textbox(label="Rewritten", lines=3, buttons=["copy"])

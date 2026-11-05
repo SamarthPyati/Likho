@@ -167,10 +167,13 @@ its remaining errors share one cause: the word is valid in both languages.
 
 ### Fix
 
-1. **Capitalisation as a name signal.** A capitalised word that is not
-   sentence-initial and is a Hindi dictionary word (Priya, Asha) should lean
-   NAMED_ENTITY, checked before the dictionary lookup that currently wins
-   (see table *What decided each token's kind*).
+1. **Names at the start of a sentence.** The tagger already treats a
+   capitalised word *mid-sentence* as a name (`likho/tokenize.py`, step 1).
+   All three F7 cases are the **first word** of their sentence — *Priya*,
+   *Bengaluru*, *Asha* — where capitalisation says nothing, so the dictionary
+   step decides and finds a Hindi word. Add a list of common Indian given names
+   and place names, checked for capitalised sentence-initial words before the
+   dictionary; or send those words to the Param-1 tie-break.
 2. **A Hinglish-first override list** for high-frequency collisions where the
    Hindi reading is overwhelmingly likely in a Hindi sentence: *maine, use,
    jai, chai, main*. The context signal exists; these words need a stronger
